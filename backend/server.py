@@ -79,12 +79,18 @@ class LuckScoreResponse(BaseModel):
     element_score: int
     lucky_color: str
     lucky_number: int
+    lucky_number_meaning: Optional[str] = None
     recommended_activities: List[str]
     avoid_activities: List[str]
     interpretation: str
     zodiac_sign: str
     chinese_zodiac: str
     life_path_number: int
+    is_master_number: Optional[bool] = False
+    life_path_energy: Optional[str] = None
+    life_path_traits: Optional[str] = None
+    friendly_numbers: Optional[List[int]] = None
+    challenging_numbers: Optional[List[int]] = None
     dominant_element: str
     # Chinese Metaphysical Calendar fields
     day_officer: Optional[str] = None
@@ -96,6 +102,9 @@ class LuckScoreResponse(BaseModel):
     business_description: Optional[str] = None
     officer_good_for: Optional[List[str]] = None
     officer_avoid: Optional[List[str]] = None
+    # Lo Shu Grid (Chinese Numerology)
+    lo_shu_missing: Optional[List[int]] = None
+    lo_shu_strengths: Optional[List[str]] = None
     created_at: str
 
 class TokenResponse(BaseModel):
@@ -395,6 +404,165 @@ def calculate_western_score(target_date: date, birth_date: date) -> int:
     total = int(max(0, min(40, jupiter_score + venus_score + mercury_score + mars_score)))
     return total
 
+# ============ CHINESE NUMEROLOGY & GG33 SYSTEM ============
+
+# Chinese Lucky/Unlucky Numbers (based on pronunciation)
+CHINESE_LUCKY_NUMBERS = {
+    8: {"luck": "极吉", "meaning": "Prosperity & wealth (八 sounds like 发)", "score": 10},
+    6: {"luck": "吉", "meaning": "Smooth & flowing (六 sounds like 流)", "score": 8},
+    9: {"luck": "吉", "meaning": "Longevity & eternity (九 sounds like 久)", "score": 8},
+    2: {"luck": "吉", "meaning": "Pairs & harmony (好事成双)", "score": 6},
+    3: {"luck": "吉", "meaning": "Life & growth (三 sounds like 生)", "score": 6},
+    1: {"luck": "中", "meaning": "Unity & beginning", "score": 5},
+    5: {"luck": "中", "meaning": "Balance (Five Elements center)", "score": 5},
+    7: {"luck": "凶", "meaning": "Gone/departed (七 sounds like 去)", "score": 3},
+    4: {"luck": "大凶", "meaning": "Death (四 sounds like 死)", "score": 1},
+}
+
+# GG33 Number Meanings (Gary the Numbers Guy)
+GG33_MEANINGS = {
+    1: {"energy": "Yang/Male", "traits": "Leadership, independence, pioneer", "friendly": [3, 5, 9], "challenging": [4, 8]},
+    2: {"energy": "Yin/Female", "traits": "Cooperation, peace, diplomacy", "friendly": [6, 8, 9], "challenging": [5, 7]},
+    3: {"energy": "Creative", "traits": "Communication, luck, comedy, expression", "friendly": [1, 5, 9], "challenging": [4, 8]},
+    4: {"energy": "Builder", "traits": "Work, structure, foundation, discipline", "friendly": [2, 6, 8], "challenging": [1, 3, 5]},
+    5: {"energy": "Change", "traits": "Travel, freedom, adventure, sensuality", "friendly": [1, 3, 7, 9], "challenging": [2, 4, 6]},
+    6: {"energy": "Harmony", "traits": "Home, family, nurturing, responsibility", "friendly": [2, 4, 8, 9], "challenging": [1, 5]},
+    7: {"energy": "Genius", "traits": "Intelligence, spirituality, analysis, introspection", "friendly": [3, 5], "challenging": [2, 8, 9]},
+    8: {"energy": "Power", "traits": "Money, success, authority, karma", "friendly": [2, 4, 6], "challenging": [1, 3, 7]},
+    9: {"energy": "Wisdom", "traits": "Completion, humanitarian, universal love", "friendly": [1, 3, 5, 6], "challenging": [4, 8]},
+    11: {"energy": "Master Intuition", "traits": "Awareness, illumination, visionary, spiritual messenger", "friendly": [2, 4, 6], "challenging": [5, 7]},
+    22: {"energy": "Master Builder", "traits": "Manifesting dreams, practical idealism, large-scale creation", "friendly": [4, 6, 8], "challenging": [5, 7]},
+    33: {"energy": "Master Teacher", "traits": "Enlightenment, blessing others, selfless service", "friendly": [3, 6, 9], "challenging": [1, 5]},
+}
+
+# Lo Shu Grid positions (Magic Square)
+LO_SHU_GRID = {
+    4: (0, 0), 9: (0, 1), 2: (0, 2),
+    3: (1, 0), 5: (1, 1), 7: (1, 2),
+    8: (2, 0), 1: (2, 1), 6: (2, 2)
+}
+
+LO_SHU_PLANES = {
+    "mental": [4, 9, 2],      # Top row - thinking, analysis
+    "emotional": [3, 5, 7],   # Middle row - creativity, spirituality  
+    "practical": [8, 1, 6],   # Bottom row - wealth, action
+    "thought": [4, 3, 8],     # Left column - memory, planning
+    "will": [9, 5, 1],        # Center column - determination
+    "action": [2, 7, 6],      # Right column - execution
+    "spiritual": [4, 5, 6],   # Diagonal - purpose
+    "success": [2, 5, 8],     # Diagonal - prosperity from ancestors
+}
+
+def calculate_lo_shu_grid(birth_date_str: str) -> dict:
+    """Calculate Lo Shu Grid from birth date (Chinese numerology)"""
+    # Extract digits (ignore 0s per Lo Shu tradition)
+    digits = [int(d) for d in birth_date_str.replace("-", "") if d.isdigit() and d != '0']
+    
+    # Count occurrences
+    grid_counts = {i: digits.count(i) for i in range(1, 10)}
+    
+    # Find missing and repeated numbers
+    missing = [n for n in range(1, 10) if grid_counts[n] == 0]
+    repeated = [n for n in range(1, 10) if grid_counts[n] > 1]
+    
+    # Check planes (complete if all numbers present)
+    complete_planes = []
+    missing_planes = []
+    for plane_name, numbers in LO_SHU_PLANES.items():
+        if all(grid_counts[n] > 0 for n in numbers):
+            complete_planes.append(plane_name)
+        elif all(grid_counts[n] == 0 for n in numbers):
+            missing_planes.append(plane_name)
+    
+    # Strengths based on repeated numbers
+    strengths = []
+    for n, count in grid_counts.items():
+        if count >= 2:
+            meaning = GG33_MEANINGS.get(n, {}).get("traits", "")
+            strengths.append(f"{n} ({count}x): {meaning.split(',')[0]}")
+    
+    return {
+        "grid_counts": grid_counts,
+        "missing_numbers": missing,
+        "repeated_numbers": repeated,
+        "complete_planes": complete_planes,
+        "missing_planes": missing_planes,
+        "strengths": strengths[:3]
+    }
+
+def get_gg33_life_path(birth_date_str: str) -> dict:
+    """Calculate Life Path number using GG33 method with Master Numbers"""
+    digits = [int(d) for d in birth_date_str.replace("-", "") if d.isdigit()]
+    total = sum(digits)
+    
+    # Keep reducing but preserve Master Numbers 11, 22, 33
+    while total > 9 and total not in [11, 22, 33]:
+        total = sum(int(d) for d in str(total))
+    
+    # Get GG33 meaning
+    meaning = GG33_MEANINGS.get(total, GG33_MEANINGS.get(total % 10, {}))
+    is_master = total in [11, 22, 33]
+    
+    return {
+        "number": total,
+        "is_master_number": is_master,
+        "energy": meaning.get("energy", ""),
+        "traits": meaning.get("traits", ""),
+        "friendly_numbers": meaning.get("friendly", []),
+        "challenging_numbers": meaning.get("challenging", [])
+    }
+
+def get_chinese_lucky_number(birth_date_str: str, target_date_str: str) -> dict:
+    """Generate lucky number based on Chinese numerology"""
+    life_path = get_gg33_life_path(birth_date_str)
+    date_digits = [int(d) for d in target_date_str.replace("-", "") if d.isdigit()]
+    date_sum = sum(date_digits)
+    while date_sum > 9:
+        date_sum = sum(int(d) for d in str(date_sum))
+    
+    # Prefer 8, 6, 9 as lucky; avoid 4, 7
+    candidates = [8, 6, 9, 3, 2, 1, 5]
+    
+    # Calculate based on life path and date energy
+    base = (life_path["number"] + date_sum) % 9
+    if base == 0:
+        base = 9
+    
+    # Adjust to favor Chinese lucky numbers
+    if base == 4:  # Avoid 4
+        base = 8
+    elif base == 7:  # Avoid 7
+        base = 6
+    
+    lucky_info = CHINESE_LUCKY_NUMBERS.get(base, CHINESE_LUCKY_NUMBERS[8])
+    
+    return {
+        "number": base,
+        "chinese_luck": lucky_info["luck"],
+        "meaning": lucky_info["meaning"]
+    }
+
+def calculate_numerology_score_gg33(life_path: dict, date_number: int) -> int:
+    """Calculate numerology score using GG33 friendly/challenging numbers"""
+    lp_num = life_path["number"]
+    
+    # Master numbers get bonus
+    base_score = 5 if life_path["is_master_number"] else 0
+    
+    # Check if date number is friendly or challenging
+    if date_number in life_path.get("friendly_numbers", []):
+        base_score += 15
+    elif date_number in life_path.get("challenging_numbers", []):
+        base_score += 5
+    else:
+        base_score += 10
+    
+    # Chinese numerology bonus for lucky numbers (8, 6, 9)
+    chinese_luck = CHINESE_LUCKY_NUMBERS.get(date_number, {}).get("score", 5)
+    base_score += chinese_luck // 2
+    
+    return min(20, base_score)
+
 def calculate_chinese_score(user_animal: str, day_animal: str) -> int:
     """Calculate Chinese Astrology compatibility score"""
     if day_animal in ZODIAC_COMPATIBILITY[user_animal]["best"]:
@@ -405,21 +573,6 @@ def calculate_chinese_score(user_animal: str, day_animal: str) -> int:
         return 20
     else:
         return 15
-
-def calculate_numerology_score(life_path: int, date_number: int) -> int:
-    """Calculate numerology compatibility score"""
-    compatible_pairs = {
-        1: [1, 3, 5, 9], 2: [2, 4, 6, 8], 3: [1, 3, 5, 9],
-        4: [2, 4, 6, 8], 5: [1, 3, 5, 7, 9], 6: [2, 4, 6, 8],
-        7: [5, 7], 8: [2, 4, 6, 8], 9: [1, 3, 5, 9]
-    }
-    
-    if date_number in compatible_pairs.get(life_path, []):
-        return 20
-    elif abs(life_path - date_number) <= 2:
-        return 15
-    else:
-        return 8
 
 def calculate_element_score(user_element: str, day_element: str) -> int:
     """Calculate element balance score based on Wu Xing"""
@@ -475,39 +628,52 @@ def get_interpretation(score: int) -> str:
         return "Low energy day. Best for rest, reflection, and avoiding major decisions. Use this time for planning future moves."
 
 def calculate_luck_score(birth_date_str: str, target_date_str: str) -> dict:
-    """Main function to calculate complete luck score"""
+    """Main function to calculate complete luck score using GG33, Chinese Numerology, and Joey Yap methods"""
     birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date()
     target_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
     
     # User's astrological profile
     zodiac_sign = get_zodiac_sign(birth_date.month, birth_date.day)
     chinese_zodiac = get_chinese_zodiac(birth_date.year)
-    life_path = get_life_path_number(birth_date_str)
     user_element = get_element_from_year(birth_date.year)
+    
+    # GG33 Life Path calculation with Master Numbers
+    life_path_data = get_gg33_life_path(birth_date_str)
+    life_path = life_path_data["number"]
+    
+    # Lo Shu Grid (Chinese Numerology)
+    lo_shu = calculate_lo_shu_grid(birth_date_str)
     
     # Day's astrological profile
     day_chinese_zodiac = get_chinese_zodiac(target_date.year)
     date_number = get_date_number(target_date_str)
     day_element = get_element_from_year(target_date.year)
     
-    # Chinese Metaphysical Calendar calculations
+    # Chinese Metaphysical Calendar calculations (Joey Yap style)
     day_officer = get_day_officer(target_date)
     forgiveness_day = is_tian_she_day(target_date)
     business_quality = get_business_day_quality(day_officer, forgiveness_day)
     
+    # Chinese Lucky Number
+    lucky_num_data = get_chinese_lucky_number(birth_date_str, target_date_str)
+    
     # Calculate component scores (weighted)
     western_raw = calculate_western_score(target_date, birth_date)
     chinese_raw = calculate_chinese_score(chinese_zodiac, day_chinese_zodiac)
-    numerology_raw = calculate_numerology_score(life_path, date_number)
+    numerology_raw = calculate_numerology_score_gg33(life_path_data, date_number)
     element_raw = calculate_element_score(user_element, day_element)
     
     # Adjust Chinese score based on Day Officer
     officer_bonus = (business_quality["score"] - 5) * 2  # -8 to +10
     chinese_raw = max(0, min(30, chinese_raw + officer_bonus))
     
-    # Bonus for Day Forgiveness
+    # Bonus for Day Forgiveness (天赦日)
     if forgiveness_day:
         chinese_raw = min(30, chinese_raw + 5)
+    
+    # Master Number bonus
+    if life_path_data["is_master_number"]:
+        numerology_raw = min(20, numerology_raw + 3)
     
     # Total score (already weighted in component functions)
     total = western_raw + chinese_raw + numerology_raw + element_raw
@@ -528,13 +694,19 @@ def calculate_luck_score(birth_date_str: str, target_date_str: str) -> dict:
         "numerology_score": numerology_raw,
         "element_score": element_raw,
         "lucky_color": get_lucky_color(user_element, total),
-        "lucky_number": get_lucky_number(life_path, date_number),
+        "lucky_number": lucky_num_data["number"],
+        "lucky_number_meaning": lucky_num_data["meaning"],
         "recommended_activities": recommended[:4],
         "avoid_activities": avoid[:3],
         "interpretation": get_interpretation(total),
         "zodiac_sign": zodiac_sign,
         "chinese_zodiac": chinese_zodiac,
         "life_path_number": life_path,
+        "is_master_number": life_path_data["is_master_number"],
+        "life_path_energy": life_path_data["energy"],
+        "life_path_traits": life_path_data["traits"],
+        "friendly_numbers": life_path_data["friendly_numbers"],
+        "challenging_numbers": life_path_data["challenging_numbers"],
         "dominant_element": user_element,
         # Chinese Metaphysical Calendar data
         "day_officer": day_officer["name"],
@@ -545,7 +717,10 @@ def calculate_luck_score(birth_date_str: str, target_date_str: str) -> dict:
         "business_quality": business_quality["quality"],
         "business_description": business_quality["description"],
         "officer_good_for": day_officer["good_for"],
-        "officer_avoid": day_officer["avoid"]
+        "officer_avoid": day_officer["avoid"],
+        # Lo Shu Grid
+        "lo_shu_missing": lo_shu["missing_numbers"],
+        "lo_shu_strengths": lo_shu["strengths"]
     }
 
 # ============ AUTH ENDPOINTS ============

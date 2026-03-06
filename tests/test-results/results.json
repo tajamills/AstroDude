@@ -567,6 +567,46 @@
               "column": 7
             },
             {
+              "title": "dashboard shows Chinese Calendar card with Day Officer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-640d33aea3354b76be5e",
+              "file": "main-feature.spec.ts",
+              "line": 164,
+              "column": 7
+            },
+            {
+              "title": "dashboard Chinese Calendar card shows non-empty business quality",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-e3933fb0ef743dd314fd",
+              "file": "main-feature.spec.ts",
+              "line": 177,
+              "column": 7
+            },
+            {
               "title": "navigation to history works from dashboard",
               "ok": true,
               "tags": [],
@@ -583,7 +623,7 @@
               ],
               "id": "c51f609594ec796609f9-5df505df62f629eac5c2",
               "file": "main-feature.spec.ts",
-              "line": 164,
+              "line": 193,
               "column": 7
             },
             {
@@ -603,7 +643,7 @@
               ],
               "id": "c51f609594ec796609f9-53ea971dab5c0a9e519b",
               "file": "main-feature.spec.ts",
-              "line": 169,
+              "line": 198,
               "column": 7
             }
           ]
@@ -826,10 +866,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-03-06T20:48:03.880Z",
-    "duration": 41.12900000000013,
+    "startTime": "2026-03-06T21:03:52.655Z",
+    "duration": 56.009000000000015,
     "expected": 0,
-    "skipped": 33,
+    "skipped": 35,
     "unexpected": 0,
     "flaky": 0
   }

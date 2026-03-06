@@ -198,7 +198,7 @@ const Dashboard = () => {
             )}
           </motion.div>
 
-          {/* Lucky Color & Number */}
+          {/* Lucky Color */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,8 +225,8 @@ const Dashboard = () => {
                   {loading ? '?' : luckData?.lucky_number}
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Number</p>
-                  <p className="font-semibold">Lucky {loading ? '...' : luckData?.lucky_number}</p>
+                  <p className="text-xs text-muted-foreground">Chinese Lucky #</p>
+                  <p className="font-semibold text-sm">{loading ? '...' : luckData?.lucky_number_meaning?.split('(')[0]}</p>
                 </div>
               </div>
             </div>
@@ -286,7 +286,7 @@ const Dashboard = () => {
             )}
           </motion.div>
 
-          {/* Profile Summary */}
+          {/* Profile Summary - Enhanced with GG33 */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -318,8 +318,74 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm">Life Path {luckData?.life_path_number}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">Life Path {luckData?.life_path_number}</span>
+                    {luckData?.is_master_number && (
+                      <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">MASTER</span>
+                    )}
+                  </div>
                 </div>
+                {luckData?.life_path_energy && (
+                  <div className="mt-2 pt-2 border-t border-white/10">
+                    <p className="text-xs text-muted-foreground">Energy: <span className="text-white">{luckData?.life_path_energy}</span></p>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+
+          {/* GG33 Numerology Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="glass-card rounded-2xl p-6"
+            data-testid="numerology-card"
+          >
+            <h3 className="text-sm text-muted-foreground mb-4">GG33 Numerology</h3>
+            
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Lucky Number (Chinese)</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-primary">{luckData?.lucky_number}</span>
+                    <span className="text-xs text-muted-foreground">{luckData?.lucky_number_meaning}</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Friendly #</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {luckData?.friendly_numbers?.map(n => (
+                        <span key={n} className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">{n}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Challenging #</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {luckData?.challenging_numbers?.map(n => (
+                        <span key={n} className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">{n}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {luckData?.lo_shu_strengths?.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-white/10">
+                    <p className="text-xs text-muted-foreground mb-1">Lo Shu Strengths</p>
+                    {luckData?.lo_shu_strengths?.slice(0, 2).map((s, i) => (
+                      <p key={i} className="text-xs text-white">{s}</p>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </motion.div>

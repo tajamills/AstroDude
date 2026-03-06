@@ -308,6 +308,146 @@ class TestLuckScore:
         assert r.status_code in [401, 403]
 
 
+class TestGG33Numerology:
+    """Tests for GG33 numerology system, Chinese lucky numbers, Lo Shu Grid"""
+
+    def test_gg33_life_path_fields_present(self, onboarded_client):
+        """Luck score must include GG33 life path fields"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        assert "life_path_number" in data
+        assert isinstance(data["life_path_number"], int)
+        assert data["life_path_number"] >= 1
+        assert "is_master_number" in data
+        assert isinstance(data["is_master_number"], bool)
+        assert "life_path_energy" in data
+        assert data["life_path_energy"] is not None and len(data["life_path_energy"]) > 0
+        assert "life_path_traits" in data
+        assert data["life_path_traits"] is not None and len(data["life_path_traits"]) > 0
+
+    def test_friendly_and_challenging_numbers(self, onboarded_client):
+        """friendly_numbers and challenging_numbers must be non-empty int lists"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        assert "friendly_numbers" in data
+        assert isinstance(data["friendly_numbers"], list)
+        assert len(data["friendly_numbers"]) > 0, "friendly_numbers should not be empty"
+        for n in data["friendly_numbers"]:
+            assert isinstance(n, int), f"friendly_numbers should contain ints, got {type(n)}"
+        assert "challenging_numbers" in data
+        assert isinstance(data["challenging_numbers"], list)
+        assert len(data["challenging_numbers"]) > 0, "challenging_numbers should not be empty"
+        for n in data["challenging_numbers"]:
+            assert isinstance(n, int), f"challenging_numbers should contain ints, got {type(n)}"
+
+    def test_chinese_lucky_number_meaning(self, onboarded_client):
+        """lucky_number_meaning must reflect Chinese pronunciation"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        assert "lucky_number" in data
+        assert "lucky_number_meaning" in data
+        assert data["lucky_number_meaning"] is not None
+        assert len(data["lucky_number_meaning"]) > 0
+        # Number 4 should be unlucky (death), 8 should be prosperity
+        lucky_num = data["lucky_number"]
+        assert lucky_num != 4, "Lucky number should never be 4 (death in Chinese)"
+
+    def test_master_number_detection_birth_date(self):
+        """Test that Life Path 11 (Master Number) is detected for a specific birth date.
+        1989-01-01: digits 1+9+8+9+0+1+0+1=29 -> 2+9=11 (Master Number)"""
+        import requests as req
+        uid = uuid.uuid4().hex[:8]
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+        
+        # Register
+        reg_r = req.post(f"{base_url}/api/auth/register", json={
+            "name": f"TEST_Master_{uid}",
+            "email": f"master_{uid}@testastro.com",
+            "password": "testpass123"
+        })
+        assert reg_r.status_code == 200
+        token = reg_r.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        # Onboard with birth date that gives Life Path 11
+        onb_r = req.put(f"{base_url}/api/users/onboarding", headers=headers, json={
+            "onboarding": {
+                "birth_date": "1989-01-01",  # 1+9+8+9+0+1+0+1=29->11 Master Number
+                "goals": ["wealth"],
+                "birth_location": "New York, USA",
+                "career_interests": [],
+                "life_focus": [],
+                "has_partner": False
+            }
+        })
+        assert onb_r.status_code == 200, f"Onboarding failed: {onb_r.text}"
+        
+        # Get luck score
+        luck_r = req.get(f"{base_url}/api/luck/today", headers=headers)
+        assert luck_r.status_code == 200
+        data = luck_r.json()
+        assert data["life_path_number"] == 11, f"Expected Life Path 11, got {data['life_path_number']}"
+        assert data["is_master_number"] == True, "Expected is_master_number=True for Life Path 11"
+        assert data["life_path_energy"] == "Master Intuition"
+
+    def test_lo_shu_grid_fields_present(self, onboarded_client):
+        """lo_shu_missing and lo_shu_strengths must be present"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        assert "lo_shu_missing" in data
+        assert isinstance(data["lo_shu_missing"], list)
+        assert "lo_shu_strengths" in data
+        assert isinstance(data["lo_shu_strengths"], list)
+        # missing numbers should be in 1-9 range
+        for n in data["lo_shu_missing"]:
+            assert 1 <= n <= 9, f"Lo Shu missing number {n} out of range 1-9"
+
+    def test_lo_shu_strengths_content(self, onboarded_client):
+        """If lo_shu_strengths is non-empty, each entry should be a non-empty string"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        for s in data.get("lo_shu_strengths", []):
+            assert isinstance(s, str) and len(s) > 0, f"Strength '{s}' should be non-empty string"
+
+    def test_chinese_number_4_is_unlucky(self):
+        """Chinese number meanings: lucky_number should never be 4 (death)"""
+        import requests as req
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+        uid = uuid.uuid4().hex[:8]
+        reg_r = req.post(f"{base_url}/api/auth/register", json={
+            "name": f"TEST_ChineseNum_{uid}",
+            "email": f"chinesenum_{uid}@testastro.com",
+            "password": "testpass123"
+        })
+        assert reg_r.status_code == 200
+        token = reg_r.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        onb_r = req.put(f"{base_url}/api/users/onboarding", headers=headers, json={
+            "onboarding": {
+                "birth_date": "1990-05-15",
+                "goals": ["wealth"],
+                "birth_location": "New York, USA",
+                "career_interests": [],
+                "life_focus": [],
+                "has_partner": False
+            }
+        })
+        assert onb_r.status_code == 200, f"Onboarding failed: {onb_r.text}"
+        luck_r = req.get(f"{base_url}/api/luck/today", headers=headers)
+        assert luck_r.status_code == 200
+        data = luck_r.json()
+        # lucky_number should never be 4 (death)
+        assert data["lucky_number"] != 4, "Lucky number should never be 4 (death in Chinese)"
+        # lucky_number_meaning should exist
+        assert data["lucky_number_meaning"] is not None
+        assert len(data["lucky_number_meaning"]) > 0
+
+
 class TestUserProfile:
     def test_get_profile_authenticated(self, onboarded_client):
         r = onboarded_client.get(f"{BASE_URL}/api/users/profile")
