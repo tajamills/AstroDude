@@ -108,7 +108,7 @@ const Onboarding = () => {
             partner_birth_date: data.has_partner ? data.partner_birth_date : null,
           }
         });
-        updateUser({ onboarding_complete: true });
+        // Don't update user yet - wait for upgrade step to complete
         
         // Simulate calculation time
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -129,6 +129,8 @@ const Onboarding = () => {
   };
 
   const handleSkipToResults = () => {
+    // Mark onboarding complete when user clicks Continue Free
+    updateUser({ onboarding_complete: true });
     navigate('/dashboard');
   };
 

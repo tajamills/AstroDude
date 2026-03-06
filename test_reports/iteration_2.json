@@ -1,0 +1,44 @@
+{
+  "summary": "Update mode: Verified onboarding bug fix. Upgrade step (continue-free-btn) is now reachable. Updated 3 spec files and helpers to reflect the corrected flow. All 24 tests pass.",
+  "mode": "update",
+  "baseline_commit": "f1fd930cf048fb734eef2542ba7a5f1cad15882a",
+  "head_commit": "edbbc49552e50842ab7d402b729004638a3c4696",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": [
+    "/app/tests/e2e/main-feature.spec.ts",
+    "/app/tests/e2e/golden-path.spec.ts",
+    "/app/tests/fixtures/helpers.ts"
+  ],
+  "quarantined_tests": [],
+  "test_report_links": ["/app/tests/e2e/main-feature.spec.ts", "/app/tests/e2e/golden-path.spec.ts", "/app/tests/e2e/core-flows.spec.ts"],
+  "action_items": [],
+  "updated_files": [
+    "/app/tests/e2e/main-feature.spec.ts",
+    "/app/tests/e2e/golden-path.spec.ts",
+    "/app/tests/fixtures/helpers.ts"
+  ],
+  "success_rate": {
+    "backend": "N/A",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "New test users created during onboarding flow tests (pattern: ob_<timestamp>@testreg.com, gp_<timestamp>@testreg.com)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Bug fixed: updateUser({ onboarding_complete: true }) moved from handleNext() to handleSkipToResults(). Onboarding flow now: steps 0-5 → generating (step 6, auto-advances after 2s) → upgrade (step 7, user clicks continue-free-btn) → dashboard. helpers.ts completeOnboarding() and all spec files updated to click continue-free-btn before expecting dashboard URL. test@astro.com has onboarding_complete=true so use new users for onboarding tests.",
+  "rca_of_issue": "Previous bug: handleNext() called updateUser({ onboarding_complete: true }) at step 6 (partner), which triggered the OnboardingRoute guard to redirect to /dashboard before step 7 (upgrade) could render, making continue-free-btn unreachable. Fix: moved updateUser call to handleSkipToResults() which is called only when continue-free-btn is clicked on the upgrade step."
+}

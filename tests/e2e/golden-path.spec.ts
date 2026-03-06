@@ -44,8 +44,11 @@ test.describe('Golden Path: Full User Journey', () => {
     await page.getByTestId('partner-no').click();
     await page.getByTestId('onboarding-next-btn').click();
     
-    // Should redirect to dashboard after onboarding complete
-    await expect(page).toHaveURL(/dashboard/, { timeout: 30000 });
+    // Step 6 (generating) auto-advances to Step 7 (upgrade)
+    // Click "Continue Free" to complete onboarding and go to dashboard
+    await expect(page.getByTestId('continue-free-btn')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('continue-free-btn').click();
+    await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
 
     // Step 3: Verify dashboard loaded with luck data
     await expect(page.getByTestId('luck-score-card')).toBeVisible();

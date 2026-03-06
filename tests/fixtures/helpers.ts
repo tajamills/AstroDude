@@ -69,7 +69,9 @@ export async function completeOnboarding(page: Page) {
   await page.getByTestId('partner-no').click();
   await page.getByTestId('onboarding-next-btn').click();
 
-  // NOTE: Step 7 upgrade screen is skipped due to OnboardingRoute redirect bug
-  // User goes directly to dashboard after onboarding completes
-  await expect(page).toHaveURL(/dashboard/, { timeout: 30000 });
+  // Step 6: Generating (auto-advances after 2s to step 7: upgrade)
+  // Step 7: Upgrade step - click "Continue Free" to complete onboarding
+  await expect(page.getByTestId('continue-free-btn')).toBeVisible({ timeout: 15000 });
+  await page.getByTestId('continue-free-btn').click();
+  await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
 }

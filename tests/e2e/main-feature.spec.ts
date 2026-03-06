@@ -52,11 +52,11 @@ test.describe('8-Step Onboarding Wizard', () => {
     await page.getByTestId('partner-no').click();
     await page.getByTestId('onboarding-next-btn').click();
 
-    // NOTE: BUG - Step 7 (upgrade screen with continue-free-btn) is unreachable
-    // because updateUser({ onboarding_complete: true }) triggers OnboardingRoute guard
-    // to redirect to /dashboard BEFORE the upgrade step can render.
-    // The user correctly lands on dashboard, but skips the upgrade screen entirely.
-    await expect(page).toHaveURL(/dashboard/, { timeout: 30000 });
+    // Step 6: Generating step auto-advances to Step 7 (upgrade)
+    // Step 7: Upgrade screen - continue-free-btn is now reachable (bug fixed)
+    await expect(page.getByTestId('continue-free-btn')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('continue-free-btn').click();
+    await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
   });
 
   test('onboarding step counter shows progress', async ({ page }) => {
