@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { luckAPI } from '../lib/api';
+import { luckAPI, paymentAPI } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
-import { StickyBannerAd } from '../components/Ads';
+import { StickyBannerAd, HiddenLuckyNumbers } from '../components/Ads';
 import { toast } from 'sonner';
 import { 
   getScoreColor, getScoreLabel, getScoreBadgeClass, 
@@ -14,7 +14,7 @@ import {
 import { 
   Sparkles, LogOut, Calendar, History, User,
   CheckCircle2, XCircle, Star, Flame, Droplets,
-  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award, Search
+  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award, Search, Crown
 } from 'lucide-react';
 
 const ELEMENT_ICONS = {
@@ -76,9 +76,11 @@ const Dashboard = () => {
   const [luckData, setLuckData] = useState(null);
   const [weekForecast, setWeekForecast] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     fetchData();
+    checkPremiumStatus();
   }, []);
 
   const fetchData = async () => {
@@ -101,6 +103,15 @@ const Dashboard = () => {
     }
   };
 
+  const checkPremiumStatus = async () => {
+    try {
+      const response = await paymentAPI.getPremiumStatus();
+      setIsPremium(response.data.is_premium);
+    } catch (error) {
+      console.error('Failed to check premium status:', error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -116,6 +127,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen cosmic-bg pb-20">
+      {/* Hidden lucky numbers */}
+      <HiddenLuckyNumbers />
+      
       {/* Background */}
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-10 pointer-events-none"
@@ -128,6 +142,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
             <span className="font-bold gradient-text hidden sm:inline">AstroLaunch</span>
+            {isPremium && <Crown className="w-4 h-4 text-yellow-400" />}
           </div>
           
           <div className="flex items-center gap-1 sm:gap-2">
@@ -557,7 +572,7 @@ const Dashboard = () => {
       </main>
 
       {/* Sticky Banner Ad */}
-      <StickyBannerAd />
+      <StickyBannerAd isPremium={isPremium} />
     </div>
   );
 };

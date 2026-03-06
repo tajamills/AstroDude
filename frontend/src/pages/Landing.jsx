@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
+import { HiddenLuckyNumbers } from '../components/Ads';
 import { Sparkles, Star, Moon, Sun, ArrowRight } from 'lucide-react';
 
 const Landing = () => {
@@ -32,6 +33,9 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen cosmic-bg overflow-hidden">
+      {/* Hidden lucky numbers */}
+      <HiddenLuckyNumbers />
+      
       {/* Hero Section */}
       <div className="relative min-h-screen flex flex-col">
         {/* Background image overlay */}

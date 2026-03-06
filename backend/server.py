@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -7,12 +7,13 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, date, timedelta
 import jwt
 import bcrypt
 import math
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -941,6 +942,182 @@ async def root():
 @api_router.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+# ============ STRIPE PAYMENT ENDPOINTS ============
+
+PREMIUM_PRICE_ID = "price_1T86JpAXuTzNcQX7JFifyxSN"
+PREMIUM_AMOUNT = 8.88
+
+class CheckoutRequest(BaseModel):
+    origin_url: str
+
+class CheckoutResponse(BaseModel):
+    url: str
+    session_id: str
+
+@api_router.post("/payments/checkout", response_model=CheckoutResponse)
+async def create_checkout_session(
+    request: Request,
+    checkout_req: CheckoutRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create Stripe checkout session for premium subscription"""
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Build URLs from frontend origin
+    success_url = f"{checkout_req.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{checkout_req.origin_url}/dashboard"
+    
+    try:
+        # Create checkout session with fixed price
+        checkout_request = CheckoutSessionRequest(
+            stripe_price_id=PREMIUM_PRICE_ID,
+            quantity=1,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": current_user["id"],
+                "user_email": current_user["email"],
+                "product": "premium_subscription"
+            }
+        )
+        
+        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction = {
+            "id": str(uuid.uuid4()),
+            "session_id": session.session_id,
+            "user_id": current_user["id"],
+            "user_email": current_user["email"],
+            "amount": PREMIUM_AMOUNT,
+            "currency": "usd",
+            "product": "premium_subscription",
+            "status": "pending",
+            "payment_status": "initiated",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payment_transactions.insert_one(transaction)
+        
+        return CheckoutResponse(url=session.url, session_id=session.session_id)
+    except Exception as e:
+        logger.error(f"Checkout error: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to create checkout: Please verify the Stripe price ID is valid")
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(
+    request: Request,
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Check payment status and update user subscription"""
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Get status from Stripe
+    status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction in database
+    transaction = await db.payment_transactions.find_one({"session_id": session_id})
+    
+    if transaction:
+        update_data = {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # If paid and not already processed, upgrade user to premium
+        if status.payment_status == "paid" and transaction.get("payment_status") != "paid":
+            await db.users.update_one(
+                {"id": current_user["id"]},
+                {"$set": {
+                    "is_premium": True,
+                    "premium_since": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            update_data["processed"] = True
+        
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": update_data}
+        )
+    
+    return {
+        "status": status.status,
+        "payment_status": status.payment_status,
+        "amount_total": status.amount_total,
+        "currency": status.currency
+    }
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature", "")
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Update transaction based on webhook
+        if webhook_response.session_id:
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {"$set": {
+                    "status": webhook_response.event_type,
+                    "payment_status": webhook_response.payment_status,
+                    "webhook_processed": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Upgrade user if payment succeeded
+            if webhook_response.payment_status == "paid":
+                user_id = webhook_response.metadata.get("user_id")
+                if user_id:
+                    await db.users.update_one(
+                        {"id": user_id},
+                        {"$set": {
+                            "is_premium": True,
+                            "premium_since": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+        
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.get("/user/premium-status")
+async def get_premium_status(current_user: dict = Depends(get_current_user)):
+    """Check if user has premium subscription"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    return {
+        "is_premium": user.get("is_premium", False),
+        "premium_since": user.get("premium_since")
+    }
 
 # Include the router
 app.include_router(api_router)

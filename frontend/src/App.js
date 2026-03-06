@@ -9,6 +9,7 @@ import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import DecodePage from './pages/DecodePage';
+import PaymentSuccess from './pages/PaymentSuccess';
 import './App.css';
 
 // Protected route wrapper
@@ -115,6 +116,11 @@ function AppRoutes() {
       <Route path="/decode" element={
         <ProtectedRoute>
           <DecodePage />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment-success" element={
+        <ProtectedRoute>
+          <PaymentSuccess />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />

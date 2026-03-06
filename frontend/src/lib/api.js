@@ -52,4 +52,11 @@ export const luckAPI = {
   getWeekForecast: () => api.get('/luck/week'),
 };
 
+// Payment API
+export const paymentAPI = {
+  createCheckout: (originUrl) => api.post('/payments/checkout', { origin_url: originUrl }),
+  getStatus: (sessionId) => api.get(`/payments/status/${sessionId}`),
+  getPremiumStatus: () => api.get('/user/premium-status'),
+};
+
 export default api;
