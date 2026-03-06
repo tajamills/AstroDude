@@ -7,6 +7,7 @@ Build AstroLaunch Core Engine - a mobile-friendly astrology app with:
 - Daily Luck Dashboard with personalized insights
 - JWT custom authentication
 - Saved user profiles and daily scores history
+- Chinese Metaphysical Calendar with Day Officers and business timing
 
 ## Architecture
 - **Frontend**: React 19 + Tailwind CSS + Framer Motion + Shadcn/UI
@@ -22,38 +23,59 @@ Build AstroLaunch Core Engine - a mobile-friendly astrology app with:
 ## Core Requirements (Static)
 - [x] Luck Score Algorithm (0-100) with 4 systems
 - [x] Western Astrology (40% weight)
-- [x] Chinese Astrology (30% weight)
+- [x] Chinese Astrology (30% weight) - Enhanced with Day Officers
 - [x] Numerology (20% weight)
 - [x] Element Balance (10% weight)
 - [x] 8-step onboarding wizard
 - [x] Daily Luck Dashboard
 - [x] User authentication (register/login)
 - [x] Score history tracking
-- [x] 7-day forecast
+- [x] 7-day forecast with business quality
 - [x] Mobile-responsive design
+- [x] Chinese Metaphysical Calendar (Day Officers, Business Quality)
 
-## What's Been Implemented (March 6, 2026)
-### Backend (server.py)
+## What's Been Implemented
+
+### March 6, 2026 - Initial MVP
 - JWT authentication with bcrypt
 - User registration & login endpoints
 - Onboarding data storage
 - Luck score calculation algorithm
 - Daily, weekly, and historical score endpoints
 - MongoDB integration
-
-### Frontend
-- Landing page with cosmic theme (Techno-Mage aesthetic)
+- Landing page with cosmic theme
 - Login & Register pages with glass-card design
 - 8-step onboarding wizard with animations
-- Bento grid dashboard with:
-  - Circular luck meter
-  - Lucky color & number display
-  - Profile summary (zodiac, element, life path)
-  - Today's guidance (Good For / Avoid)
-  - 7-day forecast
-  - Score breakdown by system
+- Bento grid dashboard
 - History page with trend indicators
-- Fully mobile-responsive
+
+### March 6, 2026 - Chinese Calendar Enhancement
+- 12 Day Officers (建除十二神) - Jian Chu system
+- Earthly Branches (地支) calculation
+- Heavenly Stems (天干) calculation  
+- Day Forgiveness Days (天赦日) detection
+- Business quality ratings (Excellent/Good/Moderate/Caution/Unfavorable)
+- Day-specific activity recommendations
+- Week forecast with business indicators
+- Chinese Calendar dashboard card
+
+## Chinese Metaphysical Calendar System
+
+### 12 Day Officers (建除十二神)
+| Officer | Chinese | Business Score | Best For |
+|---------|---------|----------------|----------|
+| Establish | 建 Jian | 8 | Starting projects, proposals |
+| Remove | 除 Chu | 6 | Cleansing, sales |
+| Full | 满 Man | 9 | Grand openings, celebrations |
+| Balance | 平 Ping | 5 | Negotiations, repairs |
+| Stable | 定 Ding | 7 | Long-term projects, contracts |
+| Initiate | 执 Zhi | 8 | New beginnings, contracts |
+| Destruction | 破 Po | 2 | Avoid major activities |
+| Danger | 危 Wei | 3 | Risk assessment only |
+| Success | 成 Cheng | 10 | Completing projects, deals |
+| Receive | 收 Shou | 8 | Closing deals, payments |
+| Open | 开 Kai | 10 | Grand openings, new ventures |
+| Close | 闭 Bi | 1 | Rest, meditation |
 
 ## Prioritized Backlog
 
@@ -62,6 +84,7 @@ Build AstroLaunch Core Engine - a mobile-friendly astrology app with:
 - [x] User authentication
 - [x] Onboarding flow
 - [x] Dashboard display
+- [x] Chinese calendar integration
 
 ### P1 (High Priority)
 - [ ] Premium subscription with Stripe
@@ -88,6 +111,6 @@ Build AstroLaunch Core Engine - a mobile-friendly astrology app with:
 4. Create yearly forecast feature
 
 ## Test Coverage
-- Backend: 25 tests (100% pass)
-- Frontend E2E: 24 tests (100% pass)
+- Backend: 29 tests (100% pass)
+- Frontend E2E: 35 tests (100% pass)
 - Test specs in `/app/tests/e2e/` and `/app/backend/tests/`
