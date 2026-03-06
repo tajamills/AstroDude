@@ -12,22 +12,22 @@
         --card-foreground: 210 40% 96%;
         --popover: 222 47% 9%;
         --popover-foreground: 210 40% 98%;
-        --primary: 38 92% 50%;
-        --primary-foreground: 0 0% 0%;
+        --primary: 220 14% 75%;
+        --primary-foreground: 222 47% 11%;
         --secondary: 217 33% 17%;
         --secondary-foreground: 210 40% 93%;
         --muted: 222 47% 6%;
         --muted-foreground: 215 16% 57%;
-        --accent: 188 94% 43%;
-        --accent-foreground: 0 0% 100%;
+        --accent: 220 14% 85%;
+        --accent-foreground: 222 47% 11%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
         --border: 217 33% 17%;
         --input: 217 33% 17%;
-        --ring: 38 92% 50%;
+        --ring: 220 14% 75%;
         --radius: 0.75rem;
-        --chart-1: 38 92% 50%;
-        --chart-2: 188 94% 43%;
+        --chart-1: 220 14% 75%;
+        --chart-2: 220 14% 85%;
         --chart-3: 142 71% 45%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
@@ -66,18 +66,26 @@
     }
     
     .gradient-text {
-        background: linear-gradient(to right, #FCD34D, #F59E0B, #D97706);
+        background: linear-gradient(to right, #E2E8F0, #CBD5E1, #94A3B8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     
+    .glow-silver {
+        box-shadow: 0 0 20px -5px rgba(203, 213, 225, 0.4);
+    }
+    
+    .glow-silver:hover {
+        box-shadow: 0 0 30px -5px rgba(203, 213, 225, 0.6);
+    }
+    
     .glow-gold {
-        box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 0 20px -5px rgba(203, 213, 225, 0.4);
     }
     
     .glow-gold:hover {
-        box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.6);
+        box-shadow: 0 0 30px -5px rgba(203, 213, 225, 0.6);
     }
     
     .glow-cyan {

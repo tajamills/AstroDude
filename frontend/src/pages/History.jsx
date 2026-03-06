@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { luckAPI } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
+import { StickyBannerAd, InFeedAd } from '../components/Ads';
 import { toast } from 'sonner';
 import { getScoreColor, getScoreLabel, getScoreBadgeClass, COLOR_MAP, formatShortDate } from '../lib/utils';
 import { ArrowLeft, Sparkles, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -46,7 +47,7 @@ const History = () => {
     : null;
 
   return (
-    <div className="min-h-screen cosmic-bg">
+    <div className="min-h-screen cosmic-bg pb-20">
       {/* Background */}
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-10 pointer-events-none"
@@ -146,58 +147,64 @@ const History = () => {
             history.map((item, index) => {
               const trend = getTrend(item.total_score, history[index + 1]?.total_score);
               const TrendIcon = trend?.icon;
+              const showAd = index > 0 && index % 5 === 0; // Show ad every 5 items
               
               return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="glass-card rounded-xl p-4 flex items-center gap-4"
-                  data-testid={`history-item-${index}`}
-                >
-                  <div className="flex-shrink-0">
-                    <div 
-                      className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold"
-                      style={{ 
-                        backgroundColor: `${getScoreColor(item.total_score)}20`,
-                        color: getScoreColor(item.total_score)
-                      }}
-                    >
-                      {item.total_score}
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium">{formatShortDate(item.date)}</p>
-                      <span className={`score-badge text-xs ${getScoreBadgeClass(item.total_score)}`}>
-                        {getScoreLabel(item.total_score)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {item.zodiac_sign} • {item.lucky_color} • #{item.lucky_number}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-6 h-6 rounded-full"
-                      style={{ backgroundColor: COLOR_MAP[item.lucky_color] || item.lucky_color }}
-                    />
-                    {trend && (
-                      <div className={`flex items-center gap-1 ${trend.color}`}>
-                        <TrendIcon className="w-4 h-4" />
-                        <span className="text-xs">{trend.label}</span>
+                <React.Fragment key={item.id}>
+                  {showAd && <InFeedAd />}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="glass-card rounded-xl p-4 flex items-center gap-4"
+                    data-testid={`history-item-${index}`}
+                  >
+                    <div className="flex-shrink-0">
+                      <div 
+                        className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold"
+                        style={{ 
+                          backgroundColor: `${getScoreColor(item.total_score)}20`,
+                          color: getScoreColor(item.total_score)
+                        }}
+                      >
+                        {item.total_score}
                       </div>
-                    )}
-                  </div>
-                </motion.div>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium">{formatShortDate(item.date)}</p>
+                        <span className={`score-badge text-xs ${getScoreBadgeClass(item.total_score)}`}>
+                          {getScoreLabel(item.total_score)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {item.zodiac_sign} • {item.lucky_color} • #{item.lucky_number}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-6 h-6 rounded-full"
+                        style={{ backgroundColor: COLOR_MAP[item.lucky_color] || item.lucky_color }}
+                      />
+                      {trend && (
+                        <div className={`flex items-center gap-1 ${trend.color}`}>
+                          <TrendIcon className="w-4 h-4" />
+                          <span className="text-xs">{trend.label}</span>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </React.Fragment>
               );
             })
           )}
         </div>
       </main>
+
+      {/* Sticky Banner Ad */}
+      <StickyBannerAd />
     </div>
   );
 };

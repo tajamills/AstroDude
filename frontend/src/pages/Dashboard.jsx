@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { luckAPI } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
+import { StickyBannerAd } from '../components/Ads';
 import { toast } from 'sonner';
 import { 
   getScoreColor, getScoreLabel, getScoreBadgeClass, 
@@ -13,7 +14,7 @@ import {
 import { 
   Sparkles, LogOut, Calendar, History, User,
   CheckCircle2, XCircle, Star, Flame, Droplets,
-  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award
+  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award, Search
 } from 'lucide-react';
 
 const ELEMENT_ICONS = {
@@ -114,7 +115,7 @@ const Dashboard = () => {
     : '#F59E0B';
 
   return (
-    <div className="min-h-screen cosmic-bg">
+    <div className="min-h-screen cosmic-bg pb-20">
       {/* Background */}
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-10 pointer-events-none"
@@ -129,7 +130,17 @@ const Dashboard = () => {
             <span className="font-bold gradient-text hidden sm:inline">AstroLaunch</span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/decode')}
+              className="text-white/70 hover:text-white"
+              data-testid="nav-decode-btn"
+            >
+              <Search className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Decode</span>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -544,6 +555,9 @@ const Dashboard = () => {
           </motion.div>
         </div>
       </main>
+
+      {/* Sticky Banner Ad */}
+      <StickyBannerAd />
     </div>
   );
 };

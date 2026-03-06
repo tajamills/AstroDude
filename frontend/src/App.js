@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
+import DecodePage from './pages/DecodePage';
 import './App.css';
 
 // Protected route wrapper
@@ -109,6 +110,11 @@ function AppRoutes() {
       <Route path="/history" element={
         <ProtectedRoute>
           <History />
+        </ProtectedRoute>
+      } />
+      <Route path="/decode" element={
+        <ProtectedRoute>
+          <DecodePage />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
