@@ -1,34 +1,234 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+/* App-specific styles */
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
+.App {
     min-height: 100vh;
+    background: #020617;
+}
+
+/* Hero background with overlay */
+.hero-bg {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, 
+        rgba(2, 6, 23, 0.7) 0%,
+        rgba(2, 6, 23, 0.9) 100%
+    );
+}
+
+/* Onboarding step transitions */
+.step-enter {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.step-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.step-exit {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.step-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Circular progress for luck meter */
+.luck-meter {
+    position: relative;
+    width: 180px;
+    height: 180px;
+}
+
+.luck-meter-circle {
+    transform: rotate(-90deg);
+}
+
+.luck-meter-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 12;
+}
+
+.luck-meter-progress {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-in-out;
+}
+
+.luck-meter-score {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+/* Activity cards */
+.activity-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Week forecast */
+.week-day {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: rgba(15, 23, 42, 0.4);
+}
+
+.week-day:hover {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.week-day.today {
+    border: 1px solid rgba(245, 158, 11, 0.5);
+}
+
+/* Option cards for onboarding */
+.option-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option-card:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.option-card.selected {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+/* Auth form styles */
+.auth-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.auth-input::placeholder {
+    color: #6B7280;
+}
+
+.auth-input:focus {
+    border-color: rgba(245, 158, 11, 0.5);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* Navigation */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
     color: white;
 }
 
-.App-link {
-    color: #61dafb;
+.nav-item.active {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Skeleton loading */
+.skeleton {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background: #1E293B;
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Toast customization */
+[data-sonner-toaster] [data-sonner-toast] {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Color swatch */
+.color-swatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Score interpretation badge */
+.score-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.score-badge.high {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22C55E;
+}
+
+.score-badge.good {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.score-badge.neutral {
+    background: rgba(148, 163, 184, 0.2);
+    color: #94A3B8;
+}
+
+.score-badge.low {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
 }
