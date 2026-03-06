@@ -1,0 +1,144 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "AstroLaunch Core Engine",
+      "tone": "Mystical, Precision, Cosmic, Empowering",
+      "archetype": "The Techno-Mage (Ancient Wisdom + Future Tech)"
+    },
+    "typography": {
+      "fonts": {
+        "heading": "Cinzel",
+        "body": "Plus Jakarta Sans",
+        "mono": "Space Mono"
+      },
+      "scale": {
+        "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body": "text-base leading-relaxed",
+        "small": "text-sm text-muted-foreground",
+        "tiny": "text-xs uppercase tracking-widest"
+      },
+      "imports": [
+        "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono&display=swap"
+      ]
+    },
+    "colors": {
+      "theme": "dark",
+      "palette": {
+        "background": "#020617",
+        "foreground": "#F8FAFC",
+        "card": "rgba(15, 23, 42, 0.6)",
+        "card_foreground": "#F1F5F9",
+        "primary": "#F59E0B",
+        "primary_foreground": "#000000",
+        "secondary": "#1E293B",
+        "secondary_foreground": "#E2E8F0",
+        "muted": "#0F172A",
+        "muted_foreground": "#94A3B8",
+        "accent": "#06B6D4",
+        "accent_foreground": "#FFFFFF",
+        "border": "rgba(255,255,255,0.1)",
+        "input": "rgba(15, 23, 42, 0.8)",
+        "ring": "#F59E0B"
+      },
+      "gradients": {
+        "hero": "radial-gradient(circle at center, #1E1B4B 0%, #020617 100%)",
+        "card_glow": "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)",
+        "gold_text": "linear-gradient(to right, #FCD34D, #F59E0B, #D97706)",
+        "neon_border": "linear-gradient(90deg, transparent, #06B6D4, transparent)"
+      }
+    },
+    "spacing": {
+      "container": "px-4 md:px-8 max-w-7xl mx-auto",
+      "section_gap": "py-16 md:py-24",
+      "element_gap": "gap-6",
+      "internal_padding": "p-6 md:p-8"
+    },
+    "radius": {
+      "default": "rounded-xl",
+      "card": "rounded-2xl",
+      "button": "rounded-full"
+    },
+    "shadows": {
+      "glow": "0 0 20px -5px rgba(245, 158, 11, 0.3)",
+      "neon": "0 0 10px rgba(6, 182, 212, 0.5)",
+      "card": "0 8px 32px rgba(0, 0, 0, 0.4)"
+    }
+  },
+  "layout_strategies": {
+    "dashboard": {
+      "type": "bento_grid",
+      "columns": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4",
+      "gap": "gap-4 md:gap-6",
+      "rules": [
+        "Luck Score card must span 2 columns on mobile if possible, or be the hero",
+        "Use aspect-ratio-square for zodiac/element tiles",
+        "Tall vertical cards for activity feeds"
+      ]
+    },
+    "onboarding": {
+      "type": "wizard_center",
+      "width": "max-w-md mx-auto",
+      "animation": "slide_in_right_exit_left"
+    }
+  },
+  "component_styles": {
+    "glass_card": {
+      "base": "backdrop-blur-xl bg-slate-950/40 border border-white/10 shadow-2xl",
+      "hover": "hover:bg-slate-950/60 hover:border-white/20 transition-all duration-300"
+    },
+    "primary_button": {
+      "base": "bg-primary text-primary-foreground font-bold px-8 py-3 rounded-full hover:scale-105 active:scale-95 transition-transform",
+      "variant": "shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)]"
+    },
+    "input_field": {
+      "base": "bg-slate-950/50 border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 h-12 text-lg"
+    },
+    "luck_meter": {
+      "type": "circular_progress",
+      "color_logic": "Score < 40 ? red : Score < 70 ? yellow : green"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1579398707644-ff84b1e6931f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHwzfHxkZWVwJTIwc3BhY2UlMjBuZWJ1bGElMjBjb25zdGVsbGF0aW9uJTIwYmFja2dyb3VuZCUyMGRhcmslMjBwdXJwbGUlMjBibHVlfGVufDB8fHx8MTc3MjgyNzkxOHww&ixlib=rb-4.1.0&q=85",
+      "tarot_back": "https://images.unsplash.com/photo-1671013033219-c5f37fc92a71?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHx0YXJvdCUyMGNhcmRzJTIwbXlzdGljYWx8ZW58MHx8fHwxNzcyODI3OTI3fDA&ixlib=rb-4.1.0&q=85",
+      "constellation_bg": "https://images.unsplash.com/photo-1762765990594-8625d4e7f84b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHx6b2RpYWMlMjBjb25zdGVsbGF0aW9ucyUyMHN0YXJzfGVufDB8fHx8MTc3MjgyNzkyOHww&ixlib=rb-4.1.0&q=85",
+      "avatar_placeholder": "https://images.unsplash.com/photo-1558961917-2bfe20527f46?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwzfHxuZW9uJTIwY3liZXJwdW5rJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzcyODI3OTI3fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "stroke-1"
+    }
+  },
+  "motion_guidelines": {
+    "page_transition": {
+      "initial": { "opacity": 0, "y": 20 },
+      "animate": { "opacity": 1, "y": 0 },
+      "exit": { "opacity": 0, "y": -20 },
+      "transition": { "duration": 0.4, "ease": "easeOut" }
+    },
+    "micro_interactions": {
+      "button_hover": { "scale": 1.05 },
+      "card_hover": { "y": -5 }
+    }
+  },
+  "universal_guidelines": [
+    "Always use 'Cinzel' for H1-H3 headings to maintain the mystical voice.",
+    "Data-testid attributes are mandatory for all interactive elements.",
+    "Do not use generic gradients; use the specified 'hero' or 'gold_text' gradients.",
+    "Ensure 3:1 contrast for all text. Use 'text-shadow' on hero images.",
+    "For mobile, images must be max-h-[80vh].",
+    "Use 'sonner' for all toast notifications.",
+    "Use 'lucide-react' for icons."
+  ],
+  "instructions_to_main_agent": [
+    "Install 'framer-motion' for animations.",
+    "Install 'clsx' and 'tailwind-merge' for class handling if not present.",
+    "Use the provided image URLs for backgrounds and placeholders.",
+    "Implement the 8-step onboarding as a single component with internal state or a multi-route flow.",
+    "The Luck Score algorithm should be visualized with a circular progress or a mystical chart.",
+    "Ensure the Dashboard is responsive: 1 column on mobile, 3-4 on desktop."
+  ]
+}
