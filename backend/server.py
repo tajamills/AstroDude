@@ -86,6 +86,16 @@ class LuckScoreResponse(BaseModel):
     chinese_zodiac: str
     life_path_number: int
     dominant_element: str
+    # Chinese Metaphysical Calendar fields
+    day_officer: Optional[str] = None
+    day_officer_chinese: Optional[str] = None
+    day_stem_branch: Optional[str] = None
+    day_zodiac: Optional[str] = None
+    is_forgiveness_day: Optional[bool] = False
+    business_quality: Optional[str] = None
+    business_description: Optional[str] = None
+    officer_good_for: Optional[List[str]] = None
+    officer_avoid: Optional[List[str]] = None
     created_at: str
 
 class TokenResponse(BaseModel):
@@ -144,6 +154,169 @@ ZODIAC_SIGNS = [
 CHINESE_ZODIAC = ["Rat", "Ox", "Tiger", "Rabbit", "Dragon", "Snake", "Horse", "Goat", "Monkey", "Rooster", "Dog", "Pig"]
 
 ELEMENTS = ["Wood", "Fire", "Earth", "Metal", "Water"]
+
+# ============ CHINESE METAPHYSICAL CALENDAR ============
+
+# 12 Earthly Branches (地支) - corresponds to Chinese Zodiac
+EARTHLY_BRANCHES = ["Zi", "Chou", "Yin", "Mao", "Chen", "Si", "Wu", "Wei", "Shen", "You", "Xu", "Hai"]
+BRANCH_TO_ZODIAC = dict(zip(EARTHLY_BRANCHES, CHINESE_ZODIAC))
+
+# 10 Heavenly Stems (天干)
+HEAVENLY_STEMS = ["Jia", "Yi", "Bing", "Ding", "Wu", "Ji", "Geng", "Xin", "Ren", "Gui"]
+
+# 12 Day Officers (建除十二神) - Jian Chu system
+DAY_OFFICERS = [
+    {"name": "Establish", "chinese": "建", "pinyin": "Jian", 
+     "good_for": ["Starting new projects", "Business travel", "Prayers", "Proposals"],
+     "avoid": ["Major construction", "Lawsuits"],
+     "business_score": 8},
+    {"name": "Remove", "chinese": "除", "pinyin": "Chu",
+     "good_for": ["Cleansing", "Clearing debts", "Sales", "Medical treatments"],
+     "avoid": ["Weddings", "Moving house"],
+     "business_score": 6},
+    {"name": "Full", "chinese": "满", "pinyin": "Man",
+     "good_for": ["Grand openings", "Agreements", "Celebrations", "Gatherings"],
+     "avoid": ["Burials", "Construction starts"],
+     "business_score": 9},
+    {"name": "Balance", "chinese": "平", "pinyin": "Ping",
+     "good_for": ["Negotiations", "Repairs", "Road building", "Mediation"],
+     "avoid": ["Major investments", "Weddings"],
+     "business_score": 5},
+    {"name": "Stable", "chinese": "定", "pinyin": "Ding",
+     "good_for": ["Long-term projects", "Contracts", "Engagements", "Medical"],
+     "avoid": ["Travel", "Litigation"],
+     "business_score": 7},
+    {"name": "Initiate", "chinese": "执", "pinyin": "Zhi",
+     "good_for": ["New beginnings", "Signing contracts", "Collecting debts", "Construction"],
+     "avoid": ["Moving house", "Relocating business"],
+     "business_score": 8},
+    {"name": "Destruction", "chinese": "破", "pinyin": "Po",
+     "good_for": ["Demolition", "Breaking bad habits", "Medical procedures"],
+     "avoid": ["All major activities", "Business launches", "Weddings"],
+     "business_score": 2},
+    {"name": "Danger", "chinese": "危", "pinyin": "Wei",
+     "good_for": ["Risk assessment", "Security matters", "Prayers"],
+     "avoid": ["Travel", "Major decisions", "High-risk activities"],
+     "business_score": 3},
+    {"name": "Success", "chinese": "成", "pinyin": "Cheng",
+     "good_for": ["Completing projects", "Celebrations", "Weddings", "Business deals"],
+     "avoid": ["Lawsuits", "Demolition"],
+     "business_score": 10},
+    {"name": "Receive", "chinese": "收", "pinyin": "Shou",
+     "good_for": ["Collecting payments", "Closing deals", "Harvesting", "Starting school"],
+     "avoid": ["Burials", "Medical procedures"],
+     "business_score": 8},
+    {"name": "Open", "chinese": "开", "pinyin": "Kai",
+     "good_for": ["Grand openings", "New ventures", "Moving in", "Celebrations"],
+     "avoid": ["Burials", "Funerals"],
+     "business_score": 10},
+    {"name": "Close", "chinese": "闭", "pinyin": "Bi",
+     "good_for": ["Rest", "Meditation", "Closing accounts", "Endings"],
+     "avoid": ["All major activities", "New projects", "Travel"],
+     "business_score": 1}
+]
+
+# Day Forgiveness Days (天赦日) - Heavenly Pardon Days
+# These are special auspicious days when Heaven forgives all transgressions
+# Calculated based on specific Stem-Branch combinations per season
+TIAN_SHE_DAYS = {
+    "spring": [("Wu", "Yin")],   # 戊寅 in Spring (Feb-Apr)
+    "summer": [("Jia", "Wu")],   # 甲午 in Summer (May-Jul)
+    "autumn": [("Wu", "Shen")],  # 戊申 in Autumn (Aug-Oct)
+    "winter": [("Jia", "Zi")]    # 甲子 in Winter (Nov-Jan)
+}
+
+def get_season(month: int) -> str:
+    """Get season from month"""
+    if month in [2, 3, 4]:
+        return "spring"
+    elif month in [5, 6, 7]:
+        return "summer"
+    elif month in [8, 9, 10]:
+        return "autumn"
+    else:
+        return "winter"
+
+def get_day_stem_branch(target_date: date) -> tuple:
+    """Calculate the Heavenly Stem and Earthly Branch for a given date
+    Using the 60 Jia Zi (甲子) cycle"""
+    # Reference date: January 1, 1900 was Jia Chen (甲辰) day
+    # Stem index 0 (Jia), Branch index 4 (Chen)
+    reference_date = date(1900, 1, 1)
+    days_diff = (target_date - reference_date).days
+    
+    stem_index = (days_diff + 0) % 10  # Jia is index 0
+    branch_index = (days_diff + 4) % 12  # Chen is index 4
+    
+    return (HEAVENLY_STEMS[stem_index], EARTHLY_BRANCHES[branch_index])
+
+def get_month_branch(month: int) -> str:
+    """Get the Earthly Branch for a lunar month (approximated from solar month)
+    Month 1 (Feb) = Yin, Month 2 (Mar) = Mao, etc."""
+    # Solar months roughly correspond: Feb=Yin, Mar=Mao...
+    branch_index = (month + 1) % 12  # Adjust so Feb (month 2) -> Yin (index 2)
+    return EARTHLY_BRANCHES[branch_index]
+
+def get_day_officer(target_date: date) -> dict:
+    """Calculate the Day Officer (建除十二神) for a given date"""
+    day_stem, day_branch = get_day_stem_branch(target_date)
+    month_branch = get_month_branch(target_date.month)
+    
+    # Find the branch indices
+    day_branch_idx = EARTHLY_BRANCHES.index(day_branch)
+    month_branch_idx = EARTHLY_BRANCHES.index(month_branch)
+    
+    # The day whose branch matches the month branch is "Establish" (Jian)
+    # Then cycle through the 12 officers
+    officer_idx = (day_branch_idx - month_branch_idx) % 12
+    
+    officer = DAY_OFFICERS[officer_idx].copy()
+    officer["day_stem"] = day_stem
+    officer["day_branch"] = day_branch
+    officer["day_zodiac"] = BRANCH_TO_ZODIAC[day_branch]
+    
+    return officer
+
+def is_tian_she_day(target_date: date) -> bool:
+    """Check if the date is a Day Forgiveness (天赦日)"""
+    season = get_season(target_date.month)
+    day_stem, day_branch = get_day_stem_branch(target_date)
+    
+    for stem, branch in TIAN_SHE_DAYS[season]:
+        if day_stem == stem and day_branch == branch:
+            return True
+    return False
+
+def get_business_day_quality(officer: dict, is_forgiveness_day: bool) -> dict:
+    """Evaluate the day's quality for business activities"""
+    base_score = officer["business_score"]
+    
+    # Bonus for Day Forgiveness
+    if is_forgiveness_day:
+        base_score = min(10, base_score + 3)
+    
+    # Determine quality level
+    if base_score >= 9:
+        quality = "Excellent"
+        description = "Highly auspicious for major business activities, launches, and deals"
+    elif base_score >= 7:
+        quality = "Good"
+        description = "Favorable for business meetings, contracts, and progress"
+    elif base_score >= 5:
+        quality = "Moderate"
+        description = "Suitable for routine business, avoid major decisions"
+    elif base_score >= 3:
+        quality = "Caution"
+        description = "Exercise caution, focus on planning rather than action"
+    else:
+        quality = "Unfavorable"
+        description = "Avoid major business activities, good for rest and reflection"
+    
+    return {
+        "score": base_score,
+        "quality": quality,
+        "description": description
+    }
 
 ELEMENT_COLORS = {
     "Wood": ["Green", "Teal", "Brown"],
@@ -317,17 +490,36 @@ def calculate_luck_score(birth_date_str: str, target_date_str: str) -> dict:
     date_number = get_date_number(target_date_str)
     day_element = get_element_from_year(target_date.year)
     
+    # Chinese Metaphysical Calendar calculations
+    day_officer = get_day_officer(target_date)
+    forgiveness_day = is_tian_she_day(target_date)
+    business_quality = get_business_day_quality(day_officer, forgiveness_day)
+    
     # Calculate component scores (weighted)
     western_raw = calculate_western_score(target_date, birth_date)
     chinese_raw = calculate_chinese_score(chinese_zodiac, day_chinese_zodiac)
     numerology_raw = calculate_numerology_score(life_path, date_number)
     element_raw = calculate_element_score(user_element, day_element)
     
+    # Adjust Chinese score based on Day Officer
+    officer_bonus = (business_quality["score"] - 5) * 2  # -8 to +10
+    chinese_raw = max(0, min(30, chinese_raw + officer_bonus))
+    
+    # Bonus for Day Forgiveness
+    if forgiveness_day:
+        chinese_raw = min(30, chinese_raw + 5)
+    
     # Total score (already weighted in component functions)
     total = western_raw + chinese_raw + numerology_raw + element_raw
     total = max(0, min(100, total))
     
     recommended, avoid = get_activities(total, zodiac_sign)
+    
+    # Enhance recommendations with Day Officer guidance
+    if business_quality["quality"] in ["Excellent", "Good"]:
+        recommended = day_officer["good_for"][:2] + recommended[:2]
+    else:
+        avoid = day_officer["avoid"][:2] + avoid[:1]
     
     return {
         "total_score": total,
@@ -337,13 +529,23 @@ def calculate_luck_score(birth_date_str: str, target_date_str: str) -> dict:
         "element_score": element_raw,
         "lucky_color": get_lucky_color(user_element, total),
         "lucky_number": get_lucky_number(life_path, date_number),
-        "recommended_activities": recommended,
-        "avoid_activities": avoid,
+        "recommended_activities": recommended[:4],
+        "avoid_activities": avoid[:3],
         "interpretation": get_interpretation(total),
         "zodiac_sign": zodiac_sign,
         "chinese_zodiac": chinese_zodiac,
         "life_path_number": life_path,
-        "dominant_element": user_element
+        "dominant_element": user_element,
+        # Chinese Metaphysical Calendar data
+        "day_officer": day_officer["name"],
+        "day_officer_chinese": f"{day_officer['chinese']} ({day_officer['pinyin']})",
+        "day_stem_branch": f"{day_officer['day_stem']}-{day_officer['day_branch']}",
+        "day_zodiac": day_officer["day_zodiac"],
+        "is_forgiveness_day": forgiveness_day,
+        "business_quality": business_quality["quality"],
+        "business_description": business_quality["description"],
+        "officer_good_for": day_officer["good_for"],
+        "officer_avoid": day_officer["avoid"]
     }
 
 # ============ AUTH ENDPOINTS ============
@@ -530,7 +732,11 @@ async def get_week_forecast(current_user: dict = Depends(get_current_user)):
             "day_name": target_date.strftime("%A"),
             "score": score_data["total_score"],
             "lucky_color": score_data["lucky_color"],
-            "lucky_number": score_data["lucky_number"]
+            "lucky_number": score_data["lucky_number"],
+            "day_officer": score_data["day_officer"],
+            "day_officer_chinese": score_data["day_officer_chinese"],
+            "business_quality": score_data["business_quality"],
+            "is_forgiveness_day": score_data["is_forgiveness_day"]
         })
     
     return forecast

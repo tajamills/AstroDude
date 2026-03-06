@@ -2,13 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: '/app/tests/e2e',
-  outputDir: '/root/.emergent/automation_output/20260306_203950/test-results',
+  outputDir: '/root/.emergent/automation_output/20260306_205249/test-results',
   timeout: 60000,
   retries: 0,
   workers: 1,
   reporter: [
     ['line'],
-    ['json', { outputFile: '/root/.emergent/automation_output/20260306_203950/results.json' }],
+    ['json', { outputFile: '/root/.emergent/automation_output/20260306_205249/results.json' }],
   ],
   use: {
     baseURL: 'https://astro-luck-engine.preview.emergentagent.com',

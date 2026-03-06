@@ -13,7 +13,7 @@ import {
 import { 
   Sparkles, LogOut, Calendar, History, User,
   CheckCircle2, XCircle, Star, Flame, Droplets,
-  Mountain, Leaf, CircleDot
+  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award
 } from 'lucide-react';
 
 const ELEMENT_ICONS = {
@@ -232,6 +232,60 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
+          {/* Chinese Calendar - Day Officer */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass-card rounded-2xl p-6"
+            data-testid="day-officer-card"
+          >
+            <h3 className="text-sm text-muted-foreground mb-4">Chinese Calendar</h3>
+            
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-red-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Day Officer</p>
+                    <p className="font-semibold text-sm">{luckData?.day_officer} {luckData?.day_officer_chinese}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Business Day</p>
+                    <p className={`font-semibold text-sm ${
+                      luckData?.business_quality === 'Excellent' ? 'text-green-400' :
+                      luckData?.business_quality === 'Good' ? 'text-primary' :
+                      luckData?.business_quality === 'Moderate' ? 'text-slate-300' :
+                      'text-red-400'
+                    }`}>{luckData?.business_quality}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-cyan-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Day Zodiac</p>
+                    <p className="font-semibold text-sm">{luckData?.day_zodiac} ({luckData?.day_stem_branch})</p>
+                  </div>
+                </div>
+                {luckData?.is_forgiveness_day && (
+                  <div className="flex items-center gap-2 bg-primary/20 rounded-lg p-2 mt-2">
+                    <Award className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-primary font-medium">Day Forgiveness (天赦日) - Highly Auspicious!</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+
           {/* Profile Summary */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -335,21 +389,24 @@ const Dashboard = () => {
             className="glass-card rounded-2xl p-6 md:col-span-3 lg:col-span-2"
             data-testid="week-forecast-card"
           >
-            <h3 className="text-sm text-muted-foreground mb-4">7-Day Forecast</h3>
+            <h3 className="text-sm text-muted-foreground mb-4">7-Day Business Forecast</h3>
             
             <div className="flex gap-2 overflow-x-auto pb-2">
               {loading ? (
                 Array(7).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="min-w-[80px] h-24 rounded-lg" />
+                  <Skeleton key={i} className="min-w-[90px] h-28 rounded-lg" />
                 ))
               ) : (
                 weekForecast.map((day, i) => {
                   const isToday = i === 0;
                   const color = getScoreColor(day.score);
+                  const businessColor = day.business_quality === 'Excellent' ? '#22C55E' :
+                                       day.business_quality === 'Good' ? '#F59E0B' :
+                                       day.business_quality === 'Moderate' ? '#94A3B8' : '#EF4444';
                   return (
                     <div
                       key={day.date}
-                      className={`week-day min-w-[80px] ${isToday ? 'today' : ''}`}
+                      className={`week-day min-w-[90px] ${isToday ? 'today' : ''} ${day.is_forgiveness_day ? 'ring-1 ring-primary' : ''}`}
                     >
                       <span className="text-xs text-muted-foreground">
                         {isToday ? 'Today' : day.day_name.slice(0, 3)}
@@ -360,10 +417,15 @@ const Dashboard = () => {
                       >
                         {day.score}
                       </span>
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: COLOR_MAP[day.lucky_color] || day.lucky_color }}
-                      />
+                      <span 
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                        style={{ backgroundColor: `${businessColor}20`, color: businessColor }}
+                      >
+                        {day.business_quality?.slice(0, 4)}
+                      </span>
+                      {day.is_forgiveness_day && (
+                        <span className="text-[8px] text-primary mt-1">天赦</span>
+                      )}
                     </div>
                   );
                 })

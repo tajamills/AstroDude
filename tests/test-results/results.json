@@ -1,0 +1,836 @@
+{
+  "config": {
+    "configFile": "/app/tests/playwright.config.ts",
+    "rootDir": "/app/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/app/tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/app/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "./test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "core-flows.spec.ts",
+      "file": "core-flows.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Landing Page",
+          "file": "core-flows.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "landing page loads with key elements",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-948df6d0649816178038",
+              "file": "core-flows.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "navigate to login from landing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-57151114e13b1386b272",
+              "file": "core-flows.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "navigate to register from landing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-5a730565e226fce3aa94",
+              "file": "core-flows.spec.ts",
+              "line": 32,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Login Flow",
+          "file": "core-flows.spec.ts",
+          "line": 43,
+          "column": 6,
+          "specs": [
+            {
+              "title": "login with valid credentials redirects to dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-6247c94a9ff7b63fe235",
+              "file": "core-flows.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "login with invalid credentials shows error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-35e047ce5f06d42b64ab",
+              "file": "core-flows.spec.ts",
+              "line": 62,
+              "column": 7
+            },
+            {
+              "title": "back button from login returns to home",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-e1e9785255b03ce79b60",
+              "file": "core-flows.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "link to register page from login works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-2c351eb39675a9dd3309",
+              "file": "core-flows.spec.ts",
+              "line": 77,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "User Registration Flow",
+          "file": "core-flows.spec.ts",
+          "line": 84,
+          "column": 6,
+          "specs": [
+            {
+              "title": "register with valid data redirects to onboarding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-40074bf5d061524777d2",
+              "file": "core-flows.spec.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "register form shows all required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-cfa1fac85b784b55360e",
+              "file": "core-flows.spec.ts",
+              "line": 105,
+              "column": 7
+            },
+            {
+              "title": "link to login page from register works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-48973143e884647b6561",
+              "file": "core-flows.spec.ts",
+              "line": 113,
+              "column": 7
+            },
+            {
+              "title": "protected routes redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "28695e5e3430c54ac89e-f803b4590b2b6d9e1c1f",
+              "file": "core-flows.spec.ts",
+              "line": 119,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "golden-path.spec.ts",
+      "file": "golden-path.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Golden Path: Full User Journey",
+          "file": "golden-path.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "complete user journey: register → onboard → view dashboard → view history → logout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d6dd496e245cb9874cb8-9cfc45c0fcf0cb8f623b",
+              "file": "golden-path.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "main-feature.spec.ts",
+      "file": "main-feature.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "8-Step Onboarding Wizard",
+          "file": "main-feature.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "onboarding flow: complete all steps and reach dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-353b801d492450b4daf8",
+              "file": "main-feature.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "onboarding step counter shows progress",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-938b7eb7c81e0acb498c",
+              "file": "main-feature.spec.ts",
+              "line": 62,
+              "column": 7
+            },
+            {
+              "title": "onboarding back button works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-2826dbc41bbd663e006a",
+              "file": "main-feature.spec.ts",
+              "line": 79,
+              "column": 7
+            },
+            {
+              "title": "onboarding requires birth date before proceeding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-f57e0b796042bcdf5a1f",
+              "file": "main-feature.spec.ts",
+              "line": 98,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Daily Luck Dashboard",
+          "file": "main-feature.spec.ts",
+          "line": 118,
+          "column": 6,
+          "specs": [
+            {
+              "title": "dashboard shows luck score card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-b8cffc0e9ac29789209e",
+              "file": "main-feature.spec.ts",
+              "line": 128,
+              "column": 7
+            },
+            {
+              "title": "dashboard shows lucky info (color and number)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-bd91d11f2ac7af335b43",
+              "file": "main-feature.spec.ts",
+              "line": 132,
+              "column": 7
+            },
+            {
+              "title": "dashboard shows profile card with zodiac info",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-350d50299cbf3e7d48db",
+              "file": "main-feature.spec.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "dashboard shows activities guidance card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-f0ff66b92300df008a01",
+              "file": "main-feature.spec.ts",
+              "line": 145,
+              "column": 7
+            },
+            {
+              "title": "dashboard shows 7-day forecast",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-2d1adb607d49f3a41fb6",
+              "file": "main-feature.spec.ts",
+              "line": 151,
+              "column": 7
+            },
+            {
+              "title": "dashboard shows score breakdown with 4 systems",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-cac10fac5c274d8c2243",
+              "file": "main-feature.spec.ts",
+              "line": 156,
+              "column": 7
+            },
+            {
+              "title": "navigation to history works from dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-5df505df62f629eac5c2",
+              "file": "main-feature.spec.ts",
+              "line": 164,
+              "column": 7
+            },
+            {
+              "title": "logout works from dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c51f609594ec796609f9-53ea971dab5c0a9e519b",
+              "file": "main-feature.spec.ts",
+              "line": 169,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "secondary-features.spec.ts",
+      "file": "secondary-features.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Score History Page",
+          "file": "secondary-features.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "history page loads with stats cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-6b74b543881931d94643",
+              "file": "secondary-features.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "history page shows days tracked count",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-891f152f38f1b1c885f0",
+              "file": "secondary-features.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "back to dashboard button works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-58fd68a36e6f083bdc9d",
+              "file": "secondary-features.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "history page shows history items after visit dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-2b89f9d5d3e3c53df6e9",
+              "file": "secondary-features.spec.ts",
+              "line": 27,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Mobile Responsive Design",
+          "file": "secondary-features.spec.ts",
+          "line": 42,
+          "column": 6,
+          "specs": [
+            {
+              "title": "landing page is responsive on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-775050ed21003c177e70",
+              "file": "secondary-features.spec.ts",
+              "line": 52,
+              "column": 7
+            },
+            {
+              "title": "login form is responsive on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-c482e22f7f5b58b870bf",
+              "file": "secondary-features.spec.ts",
+              "line": 63,
+              "column": 7
+            },
+            {
+              "title": "dashboard is responsive on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-5c08afce465e39de1ca4",
+              "file": "secondary-features.spec.ts",
+              "line": 71,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Auth State Management",
+          "file": "secondary-features.spec.ts",
+          "line": 79,
+          "column": 6,
+          "specs": [
+            {
+              "title": "authenticated user redirected from login to dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-c9d04f28ef5dc7838f89",
+              "file": "secondary-features.spec.ts",
+              "line": 80,
+              "column": 7
+            },
+            {
+              "title": "logout clears auth and redirects to home",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c282c8e71dda8c066e12-e9a6447f13092ac9615c",
+              "file": "secondary-features.spec.ts",
+              "line": 88,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-06T20:48:03.880Z",
+    "duration": 41.12900000000013,
+    "expected": 0,
+    "skipped": 33,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -161,6 +161,35 @@ test.describe('Daily Luck Dashboard', () => {
     await expect(page.locator('[data-testid="breakdown-card"]').getByText('Element Balance')).toBeVisible();
   });
 
+  test('dashboard shows Chinese Calendar card with Day Officer', async ({ page }) => {
+    await expect(page.getByTestId('day-officer-card')).toBeVisible();
+    const card = page.getByTestId('day-officer-card');
+    // Card heading
+    await expect(card.getByText('Chinese Calendar')).toBeVisible({ timeout: 15000 });
+    // Day Officer label
+    await expect(card.getByText('Day Officer')).toBeVisible({ timeout: 15000 });
+    // Business Day label
+    await expect(card.getByText('Business Day')).toBeVisible();
+    // Day Zodiac label
+    await expect(card.getByText('Day Zodiac')).toBeVisible();
+  });
+
+  test('dashboard Chinese Calendar card shows non-empty business quality', async ({ page }) => {
+    const card = page.getByTestId('day-officer-card');
+    await expect(card).toBeVisible();
+    // Wait for loading to complete (business quality text appears)
+    await expect(card.getByText('Business Day')).toBeVisible({ timeout: 15000 });
+    // Business quality should be one of the valid values
+    const validQualities = ['Excellent', 'Good', 'Moderate', 'Caution', 'Unfavorable'];
+    let qualityFound = false;
+    for (const q of validQualities) {
+      const el = card.getByText(q);
+      const count = await el.count();
+      if (count > 0) { qualityFound = true; break; }
+    }
+    expect(qualityFound).toBeTruthy();
+  });
+
   test('navigation to history works from dashboard', async ({ page }) => {
     await page.getByTestId('nav-history-btn').click({ force: true });
     await expect(page).toHaveURL(/history/);

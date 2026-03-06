@@ -179,6 +179,75 @@ class TestLuckScore:
         assert "life_path_number" in data
         assert "dominant_element" in data
 
+    def test_chinese_calendar_fields_present(self, onboarded_client):
+        """Chinese Calendar fields must be present in luck score response"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        # Day Officer
+        assert "day_officer" in data, "day_officer missing"
+        assert data["day_officer"] is not None, "day_officer is null"
+        assert isinstance(data["day_officer"], str)
+        # Day Officer Chinese
+        assert "day_officer_chinese" in data, "day_officer_chinese missing"
+        assert data["day_officer_chinese"] is not None
+        # Day Stem Branch
+        assert "day_stem_branch" in data, "day_stem_branch missing"
+        assert data["day_stem_branch"] is not None
+        # Day Zodiac
+        assert "day_zodiac" in data, "day_zodiac missing"
+        assert data["day_zodiac"] is not None
+        # Forgiveness day (bool)
+        assert "is_forgiveness_day" in data, "is_forgiveness_day missing"
+        assert isinstance(data["is_forgiveness_day"], bool)
+        # Business quality
+        assert "business_quality" in data, "business_quality missing"
+        assert data["business_quality"] in ["Excellent", "Good", "Moderate", "Caution", "Unfavorable"]
+        # Business description
+        assert "business_description" in data, "business_description missing"
+        assert data["business_description"] is not None
+        # Officer good for / avoid lists
+        assert "officer_good_for" in data, "officer_good_for missing"
+        assert isinstance(data["officer_good_for"], list)
+        assert "officer_avoid" in data, "officer_avoid missing"
+        assert isinstance(data["officer_avoid"], list)
+
+    def test_day_officer_calculation(self, onboarded_client):
+        """Day officer for a fixed date should be deterministic"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/date/2025-06-15")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["day_officer"] is not None
+        assert data["day_stem_branch"] is not None
+        # Run again — should be identical (deterministic / cached)
+        r2 = onboarded_client.get(f"{BASE_URL}/api/luck/date/2025-06-15")
+        assert r2.json()["day_officer"] == data["day_officer"]
+        assert r2.json()["day_stem_branch"] == data["day_stem_branch"]
+
+    def test_business_quality_values(self, onboarded_client):
+        """Business quality must be one of the valid categories"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/today")
+        assert r.status_code == 200
+        data = r.json()
+        valid_qualities = ["Excellent", "Good", "Moderate", "Caution", "Unfavorable"]
+        assert data["business_quality"] in valid_qualities
+        assert len(data["business_description"]) > 0
+
+    def test_week_forecast_includes_chinese_calendar(self, onboarded_client):
+        """Week forecast entries must include Chinese calendar fields"""
+        r = onboarded_client.get(f"{BASE_URL}/api/luck/week")
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) == 7
+        for day in data:
+            assert "day_officer" in day, f"day_officer missing for {day.get('date')}"
+            assert day["day_officer"] is not None
+            assert "day_officer_chinese" in day
+            assert "business_quality" in day
+            assert day["business_quality"] in ["Excellent", "Good", "Moderate", "Caution", "Unfavorable"]
+            assert "is_forgiveness_day" in day
+            assert isinstance(day["is_forgiveness_day"], bool)
+
     def test_luck_score_components_sum(self, onboarded_client):
         """Component scores should sum to total_score"""
         r = onboarded_client.get(f"{BASE_URL}/api/luck/today")

@@ -1,0 +1,45 @@
+{
+  "summary": "Update mode: Tested Chinese Metaphysical Calendar features. Added 5 new backend tests verifying day_officer, day_officer_chinese, day_stem_branch, day_zodiac, is_forgiveness_day, business_quality, business_description, officer_good_for, officer_avoid fields. Added 2 new frontend tests for the Chinese Calendar card (day-officer-card) in Dashboard. All 29 backend and 35 frontend tests pass.",
+  "mode": "update",
+  "baseline_commit": "edbbc49552e50842ab7d402b729004638a3c4696",
+  "head_commit": "cf0b8b61c62c5ff8345f540fc0ed27468034d458",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "regression_results": {
+    "total_specs": 35,
+    "passed": 35,
+    "failed": 0,
+    "skipped": 0
+  },
+  "specs_created": [],
+  "specs_updated": [
+    "/app/tests/e2e/main-feature.spec.ts",
+    "/app/backend/tests/test_api.py"
+  ],
+  "quarantined_tests": [],
+  "test_report_links": [
+    "/app/backend/tests/test_api.py",
+    "/app/test_reports/pytest/pytest_results_iter3.xml"
+  ],
+  "action_items": [],
+  "updated_files": [
+    "/app/tests/e2e/main-feature.spec.ts",
+    "/app/backend/tests/test_api.py"
+  ],
+  "success_rate": {
+    "backend": "100% (29/29)",
+    "frontend": "100% (35/35)"
+  },
+  "seed_data_creation": "No persistent seed data. Test users auto-created per test via onboarded_client fixture and cleaned by garbage collection.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Chinese Calendar features fully tested. LuckScoreResponse includes day_officer, day_officer_chinese, day_stem_branch, day_zodiac, is_forgiveness_day, business_quality, business_description, officer_good_for, officer_avoid. Week forecast also includes these fields. Dashboard day-officer-card (data-testid) shows Chinese Calendar, Day Officer, Business Day, Day Zodiac labels. All 5 backend Chinese calendar tests (test_chinese_calendar_fields_present, test_day_officer_calculation, test_business_quality_values, test_week_forecast_includes_chinese_calendar) and 2 frontend tests (dashboard shows Chinese Calendar card with Day Officer, dashboard Chinese Calendar card shows non-empty business quality) pass. test@astro.com / test123 is the existing stable user for login-only dashboard tests.",
+  "rca_of_issue": "N/A - no bugs found"
+}
