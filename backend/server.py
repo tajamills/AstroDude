@@ -814,6 +814,7 @@ async def get_today_luck(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Complete onboarding first")
     
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    birth_date = user["onboarding"]["birth_date"]
     
     # Check if we already calculated today's score
     existing = await db.luck_scores.find_one(
@@ -821,22 +822,29 @@ async def get_today_luck(current_user: dict = Depends(get_current_user)):
         {"_id": 0}
     )
     
-    if existing:
+    # Check if cached score has new GG33 fields, if not recalculate
+    if existing and existing.get("life_path_energy") is not None:
         return LuckScoreResponse(**existing)
     
-    # Calculate new score
-    birth_date = user["onboarding"]["birth_date"]
+    # Calculate new score (or recalculate for stale cache)
     score_data = calculate_luck_score(birth_date, today)
     
     score_doc = {
-        "id": str(uuid.uuid4()),
+        "id": existing.get("id") if existing else str(uuid.uuid4()),
         "user_id": current_user["id"],
         "date": today,
         **score_data,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": existing.get("created_at") if existing else datetime.now(timezone.utc).isoformat()
     }
     
-    await db.luck_scores.insert_one(score_doc)
+    if existing:
+        # Update stale cached score with new GG33 fields
+        await db.luck_scores.update_one(
+            {"user_id": current_user["id"], "date": today},
+            {"$set": score_doc}
+        )
+    else:
+        await db.luck_scores.insert_one(score_doc)
     
     return LuckScoreResponse(**score_doc)
 
@@ -859,22 +867,30 @@ async def get_luck_for_date(date_str: str, current_user: dict = Depends(get_curr
         {"_id": 0}
     )
     
-    if existing:
+    birth_date = user["onboarding"]["birth_date"]
+    
+    # Check if cached score has new GG33 fields, if not recalculate
+    if existing and existing.get("life_path_energy") is not None:
         return LuckScoreResponse(**existing)
     
-    # Calculate
-    birth_date = user["onboarding"]["birth_date"]
+    # Calculate (or recalculate for stale cache)
     score_data = calculate_luck_score(birth_date, date_str)
     
     score_doc = {
-        "id": str(uuid.uuid4()),
+        "id": existing.get("id") if existing else str(uuid.uuid4()),
         "user_id": current_user["id"],
         "date": date_str,
         **score_data,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": existing.get("created_at") if existing else datetime.now(timezone.utc).isoformat()
     }
     
-    await db.luck_scores.insert_one(score_doc)
+    if existing:
+        await db.luck_scores.update_one(
+            {"user_id": current_user["id"], "date": date_str},
+            {"$set": score_doc}
+        )
+    else:
+        await db.luck_scores.insert_one(score_doc)
     
     return LuckScoreResponse(**score_doc)
 
