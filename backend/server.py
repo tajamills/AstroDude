@@ -13,7 +13,7 @@ from datetime import datetime, timezone, date, timedelta
 import jwt
 import bcrypt
 import math
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+import stripe
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -966,35 +966,35 @@ async def create_checkout_session(
     if not stripe_api_key:
         raise HTTPException(status_code=500, detail="Payment system not configured")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    stripe.api_key = stripe_api_key
     
     # Build URLs from frontend origin
     success_url = f"{checkout_req.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{checkout_req.origin_url}/dashboard"
     
     try:
-        # Create checkout session with fixed price
-        checkout_request = CheckoutSessionRequest(
-            stripe_price_id=PREMIUM_PRICE_ID,
-            quantity=1,
+        # Create checkout session with subscription mode for recurring price
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[{
+                "price": PREMIUM_PRICE_ID,
+                "quantity": 1,
+            }],
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={
                 "user_id": current_user["id"],
                 "user_email": current_user["email"],
                 "product": "premium_subscription"
-            }
+            },
+            customer_email=current_user["email"]
         )
-        
-        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
         
         # Create payment transaction record
         transaction = {
             "id": str(uuid.uuid4()),
-            "session_id": session.session_id,
+            "session_id": session.id,
             "user_id": current_user["id"],
             "user_email": current_user["email"],
             "amount": PREMIUM_AMOUNT,
@@ -1006,10 +1006,13 @@ async def create_checkout_session(
         }
         await db.payment_transactions.insert_one(transaction)
         
-        return CheckoutResponse(url=session.url, session_id=session.session_id)
+        return CheckoutResponse(url=session.url, session_id=session.id)
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
+        raise HTTPException(status_code=400, detail=f"Payment error: {str(e)}")
     except Exception as e:
         logger.error(f"Checkout error: {e}")
-        raise HTTPException(status_code=400, detail=f"Failed to create checkout: Please verify the Stripe price ID is valid")
+        raise HTTPException(status_code=400, detail=f"Failed to create checkout")
 
 @api_router.get("/payments/status/{session_id}")
 async def get_payment_status(
@@ -1022,90 +1025,118 @@ async def get_payment_status(
     if not stripe_api_key:
         raise HTTPException(status_code=500, detail="Payment system not configured")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe.api_key = stripe_api_key
     
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
-    
-    # Get status from Stripe
-    status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
-    
-    # Update transaction in database
-    transaction = await db.payment_transactions.find_one({"session_id": session_id})
-    
-    if transaction:
-        update_data = {
-            "status": status.status,
-            "payment_status": status.payment_status,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }
+    try:
+        # Get session from Stripe
+        session = stripe.checkout.Session.retrieve(session_id)
         
-        # If paid and not already processed, upgrade user to premium
-        if status.payment_status == "paid" and transaction.get("payment_status") != "paid":
-            await db.users.update_one(
-                {"id": current_user["id"]},
-                {"$set": {
-                    "is_premium": True,
-                    "premium_since": datetime.now(timezone.utc).isoformat()
-                }}
+        # Update transaction in database
+        transaction = await db.payment_transactions.find_one({"session_id": session_id})
+        
+        payment_status = "paid" if session.payment_status == "paid" else session.payment_status
+        
+        if transaction:
+            update_data = {
+                "status": session.status,
+                "payment_status": payment_status,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # If paid and not already processed, upgrade user to premium
+            if payment_status == "paid" and transaction.get("payment_status") != "paid":
+                await db.users.update_one(
+                    {"id": current_user["id"]},
+                    {"$set": {
+                        "is_premium": True,
+                        "premium_since": datetime.now(timezone.utc).isoformat(),
+                        "stripe_customer_id": session.customer,
+                        "stripe_subscription_id": session.subscription
+                    }}
+                )
+                update_data["processed"] = True
+            
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": update_data}
             )
-            update_data["processed"] = True
         
-        await db.payment_transactions.update_one(
-            {"session_id": session_id},
-            {"$set": update_data}
-        )
-    
-    return {
-        "status": status.status,
-        "payment_status": status.payment_status,
-        "amount_total": status.amount_total,
-        "currency": status.currency
-    }
+        return {
+            "status": session.status,
+            "payment_status": payment_status,
+            "amount_total": session.amount_total,
+            "currency": session.currency
+        }
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe status error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
     """Handle Stripe webhooks"""
     stripe_api_key = os.environ.get("STRIPE_API_KEY")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+    
     if not stripe_api_key:
         raise HTTPException(status_code=500, detail="Payment system not configured")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe.api_key = stripe_api_key
     
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
-    
-    body = await request.body()
-    signature = request.headers.get("Stripe-Signature", "")
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
     
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        else:
+            event = stripe.Event.construct_from(
+                stripe.util.convert_to_stripe_object(payload),
+                stripe.api_key
+            )
         
-        # Update transaction based on webhook
-        if webhook_response.session_id:
+        # Handle the event
+        if event.type == "checkout.session.completed":
+            session = event.data.object
+            
+            # Update transaction
             await db.payment_transactions.update_one(
-                {"session_id": webhook_response.session_id},
+                {"session_id": session.id},
                 {"$set": {
-                    "status": webhook_response.event_type,
-                    "payment_status": webhook_response.payment_status,
+                    "status": "complete",
+                    "payment_status": "paid",
                     "webhook_processed": True,
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
             
-            # Upgrade user if payment succeeded
-            if webhook_response.payment_status == "paid":
-                user_id = webhook_response.metadata.get("user_id")
-                if user_id:
-                    await db.users.update_one(
-                        {"id": user_id},
-                        {"$set": {
-                            "is_premium": True,
-                            "premium_since": datetime.now(timezone.utc).isoformat()
-                        }}
-                    )
+            # Upgrade user
+            user_id = session.metadata.get("user_id")
+            if user_id:
+                await db.users.update_one(
+                    {"id": user_id},
+                    {"$set": {
+                        "is_premium": True,
+                        "premium_since": datetime.now(timezone.utc).isoformat(),
+                        "stripe_customer_id": session.customer,
+                        "stripe_subscription_id": session.subscription
+                    }}
+                )
+        
+        elif event.type == "customer.subscription.deleted":
+            subscription = event.data.object
+            # Handle subscription cancellation
+            await db.users.update_one(
+                {"stripe_subscription_id": subscription.id},
+                {"$set": {
+                    "is_premium": False,
+                    "premium_ended": datetime.now(timezone.utc).isoformat()
+                }}
+            )
         
         return {"status": "success"}
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Webhook signature error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid signature")
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
