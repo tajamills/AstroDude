@@ -59,4 +59,13 @@ export const paymentAPI = {
   getPremiumStatus: () => api.get('/user/premium-status'),
 };
 
+// Locations API
+export const locationsAPI = {
+  getMyLocations: (category = null) => api.get(`/locations/my-locations${category ? `?category=${category}` : ''}`),
+  getCompatibility: (partnerBirthDate, mode = 'romantic') => api.post('/locations/compatibility', {
+    partner_birth_date: partnerBirthDate,
+    mode: mode
+  }),
+};
+
 export default api;

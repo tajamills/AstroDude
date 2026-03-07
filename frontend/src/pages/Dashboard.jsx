@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { luckAPI, paymentAPI } from '../lib/api';
+import { luckAPI, paymentAPI, locationsAPI } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import { StickyBannerAd, HiddenLuckyNumbers } from '../components/Ads';
@@ -14,7 +14,8 @@ import {
 import { 
   Sparkles, LogOut, Calendar, History, User,
   CheckCircle2, XCircle, Star, Flame, Droplets,
-  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award, Search, Crown
+  Mountain, Leaf, CircleDot, Briefcase, BookOpen, Award, Search, Crown,
+  MapPin, Heart, DollarSign, ChevronRight
 } from 'lucide-react';
 
 const ELEMENT_ICONS = {
@@ -77,10 +78,12 @@ const Dashboard = () => {
   const [weekForecast, setWeekForecast] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [topLocations, setTopLocations] = useState([]);
 
   useEffect(() => {
     fetchData();
     checkPremiumStatus();
+    fetchTopLocations();
   }, []);
 
   const fetchData = async () => {
@@ -109,6 +112,21 @@ const Dashboard = () => {
       setIsPremium(response.data.is_premium);
     } catch (error) {
       console.error('Failed to check premium status:', error);
+    }
+  };
+
+  const fetchTopLocations = async () => {
+    try {
+      const response = await locationsAPI.getMyLocations();
+      // Get top location from each category
+      const locations = response.data.locations;
+      const top = [];
+      if (locations.love?.[0]) top.push({ ...locations.love[0], category: 'love' });
+      if (locations.money?.[0]) top.push({ ...locations.money[0], category: 'money' });
+      if (locations.spiritual?.[0]) top.push({ ...locations.spiritual[0], category: 'spiritual' });
+      setTopLocations(top);
+    } catch (error) {
+      console.error('Failed to fetch locations:', error);
     }
   };
 
@@ -565,6 +583,64 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Lucky Locations Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="glass-card rounded-2xl p-6 md:col-span-2 lg:col-span-2"
+            data-testid="lucky-locations-card"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <h3 className="text-sm text-muted-foreground">Lucky Locations</h3>
+              </div>
+              <button 
+                onClick={() => navigate('/locations')}
+                className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+                data-testid="explore-locations-btn"
+              >
+                Explore <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+            
+            {topLocations.length === 0 ? (
+              <div className="space-y-2">
+                {Array(3).fill(0).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {topLocations.map((loc, i) => {
+                  const icons = { love: Heart, money: DollarSign, spiritual: Sparkles };
+                  const colors = { love: 'text-pink-400', money: 'text-green-400', spiritual: 'text-purple-400' };
+                  const bgs = { love: 'bg-pink-500/20', money: 'bg-green-500/20', spiritual: 'bg-purple-500/20' };
+                  const Icon = icons[loc.category] || MapPin;
+                  return (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                      onClick={() => navigate('/locations')}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg ${bgs[loc.category]} flex items-center justify-center`}>
+                          <Icon className={`w-4 h-4 ${colors[loc.category]}`} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{loc.city}</div>
+                          <div className="text-xs text-muted-foreground capitalize">{loc.category}</div>
+                        </div>
+                      </div>
+                      <div className="text-lg font-bold text-primary">{loc.score}</div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </motion.div>

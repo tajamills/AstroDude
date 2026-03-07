@@ -957,6 +957,232 @@ async def get_week_forecast(current_user: dict = Depends(get_current_user)):
     
     return forecast
 
+
+# ============ LUCKY LOCATIONS ALGORITHM ============
+
+# Location data with element/zodiac associations
+LUCKY_LOCATIONS = {
+    "love": [
+        {"city": "Paris", "country": "France", "region": "Western Europe", "elements": ["Fire", "Water"], "zodiacs": ["Libra", "Taurus", "Pisces"], "chinese": ["Rabbit", "Snake", "Pig"], "description": "City of love, romance flows naturally here"},
+        {"city": "Venice", "country": "Italy", "region": "Southern Europe", "elements": ["Water", "Earth"], "zodiacs": ["Cancer", "Pisces", "Scorpio"], "chinese": ["Rat", "Dragon", "Monkey"], "description": "Romantic canals enhance emotional connections"},
+        {"city": "Santorini", "country": "Greece", "region": "Mediterranean", "elements": ["Fire", "Water"], "zodiacs": ["Leo", "Aries", "Sagittarius"], "chinese": ["Horse", "Tiger", "Dog"], "description": "Passionate sunsets ignite romantic energy"},
+        {"city": "Kyoto", "country": "Japan", "region": "East Asia", "elements": ["Wood", "Water"], "zodiacs": ["Virgo", "Capricorn", "Pisces"], "chinese": ["Snake", "Rooster", "Ox"], "description": "Serene temples foster deep spiritual bonds"},
+        {"city": "Buenos Aires", "country": "Argentina", "region": "South America", "elements": ["Fire", "Earth"], "zodiacs": ["Aries", "Leo", "Scorpio"], "chinese": ["Tiger", "Horse", "Dragon"], "description": "Tango passion brings fiery connections"},
+        {"city": "Bali", "country": "Indonesia", "region": "Southeast Asia", "elements": ["Water", "Wood"], "zodiacs": ["Cancer", "Pisces", "Taurus"], "chinese": ["Rabbit", "Goat", "Pig"], "description": "Spiritual island energy deepens love"},
+        {"city": "Barcelona", "country": "Spain", "region": "Western Europe", "elements": ["Fire", "Metal"], "zodiacs": ["Sagittarius", "Gemini", "Aquarius"], "chinese": ["Monkey", "Rat", "Dragon"], "description": "Artistic vibes attract creative partners"},
+        {"city": "Prague", "country": "Czech Republic", "region": "Central Europe", "elements": ["Earth", "Water"], "zodiacs": ["Taurus", "Scorpio", "Capricorn"], "chinese": ["Ox", "Snake", "Rooster"], "description": "Historic charm creates lasting bonds"},
+    ],
+    "money": [
+        {"city": "Singapore", "country": "Singapore", "region": "Southeast Asia", "elements": ["Metal", "Water"], "zodiacs": ["Capricorn", "Virgo", "Scorpio"], "chinese": ["Rat", "Dragon", "Monkey"], "description": "Financial hub with powerful wealth energy"},
+        {"city": "Hong Kong", "country": "China", "region": "East Asia", "elements": ["Metal", "Water"], "zodiacs": ["Capricorn", "Aquarius", "Scorpio"], "chinese": ["Dragon", "Snake", "Rat"], "description": "Dragon energy amplifies business success"},
+        {"city": "Dubai", "country": "UAE", "region": "Middle East", "elements": ["Fire", "Metal"], "zodiacs": ["Leo", "Aries", "Capricorn"], "chinese": ["Horse", "Tiger", "Dragon"], "description": "Desert gold attracts abundance"},
+        {"city": "New York", "country": "USA", "region": "North America", "elements": ["Metal", "Fire"], "zodiacs": ["Aries", "Leo", "Capricorn"], "chinese": ["Tiger", "Dragon", "Horse"], "description": "City that never sleeps rewards ambition"},
+        {"city": "London", "country": "UK", "region": "Western Europe", "elements": ["Earth", "Metal"], "zodiacs": ["Taurus", "Virgo", "Capricorn"], "chinese": ["Ox", "Snake", "Rooster"], "description": "Historic wealth center with stable energy"},
+        {"city": "Zurich", "country": "Switzerland", "region": "Central Europe", "elements": ["Metal", "Earth"], "zodiacs": ["Virgo", "Capricorn", "Taurus"], "chinese": ["Ox", "Rooster", "Snake"], "description": "Banking capital multiplies investments"},
+        {"city": "Tokyo", "country": "Japan", "region": "East Asia", "elements": ["Metal", "Wood"], "zodiacs": ["Virgo", "Aquarius", "Gemini"], "chinese": ["Monkey", "Rat", "Dragon"], "description": "Innovation hub rewards forward thinking"},
+        {"city": "Sydney", "country": "Australia", "region": "Oceania", "elements": ["Water", "Fire"], "zodiacs": ["Sagittarius", "Aquarius", "Pisces"], "chinese": ["Horse", "Tiger", "Dog"], "description": "Southern energy brings fresh opportunities"},
+    ],
+    "spiritual": [
+        {"city": "Varanasi", "country": "India", "region": "South Asia", "elements": ["Water", "Fire"], "zodiacs": ["Pisces", "Scorpio", "Sagittarius"], "chinese": ["Snake", "Pig", "Rabbit"], "description": "Ancient spiritual energy cleanses the soul"},
+        {"city": "Sedona", "country": "USA", "region": "North America", "elements": ["Earth", "Fire"], "zodiacs": ["Aries", "Sagittarius", "Aquarius"], "chinese": ["Horse", "Tiger", "Dog"], "description": "Vortex energy amplifies spiritual growth"},
+        {"city": "Machu Picchu", "country": "Peru", "region": "South America", "elements": ["Earth", "Wood"], "zodiacs": ["Capricorn", "Virgo", "Pisces"], "chinese": ["Ox", "Snake", "Goat"], "description": "Ancient Incan energy connects to higher realms"},
+        {"city": "Ubud", "country": "Indonesia", "region": "Southeast Asia", "elements": ["Wood", "Water"], "zodiacs": ["Cancer", "Pisces", "Virgo"], "chinese": ["Rabbit", "Goat", "Pig"], "description": "Healing energy for spiritual transformation"},
+        {"city": "Lhasa", "country": "Tibet", "region": "Central Asia", "elements": ["Metal", "Earth"], "zodiacs": ["Aquarius", "Capricorn", "Pisces"], "chinese": ["Ox", "Snake", "Rooster"], "description": "Roof of the world elevates consciousness"},
+        {"city": "Jerusalem", "country": "Israel", "region": "Middle East", "elements": ["Earth", "Fire"], "zodiacs": ["Aries", "Leo", "Scorpio"], "chinese": ["Dragon", "Tiger", "Horse"], "description": "Sacred city aligns multiple spiritual paths"},
+        {"city": "Glastonbury", "country": "UK", "region": "Western Europe", "elements": ["Water", "Earth"], "zodiacs": ["Pisces", "Cancer", "Taurus"], "chinese": ["Rabbit", "Pig", "Goat"], "description": "Mystical ley lines enhance intuition"},
+        {"city": "Mount Shasta", "country": "USA", "region": "North America", "elements": ["Earth", "Metal"], "zodiacs": ["Capricorn", "Aquarius", "Virgo"], "chinese": ["Ox", "Rooster", "Snake"], "description": "Volcanic energy awakens spiritual power"},
+    ]
+}
+
+def calculate_location_score(location: dict, element: str, zodiac: str, chinese_zodiac: str, life_path: int) -> int:
+    """Calculate compatibility score for a location based on user's profile"""
+    score = 50  # Base score
+    
+    # Element match (+20)
+    if element in location.get("elements", []):
+        score += 20
+    
+    # Western zodiac match (+15)
+    if zodiac in location.get("zodiacs", []):
+        score += 15
+    
+    # Chinese zodiac match (+15)
+    if chinese_zodiac in location.get("chinese", []):
+        score += 15
+    
+    # Life path number influence
+    lucky_nums = {
+        "Singapore": [1, 8], "Hong Kong": [8, 6], "Dubai": [8, 9], "New York": [1, 5],
+        "Paris": [2, 6], "Venice": [2, 7], "Kyoto": [7, 4], "Bali": [3, 9],
+        "Varanasi": [7, 9], "Sedona": [5, 11], "Machu Picchu": [4, 22], "Ubud": [3, 6]
+    }
+    if location["city"] in lucky_nums and life_path in lucky_nums[location["city"]]:
+        score += 10
+    
+    return min(100, score)
+
+def get_lucky_locations(birth_date_str: str, category: str = None) -> dict:
+    """Get lucky locations for a user based on their birth data"""
+    birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date()
+    
+    # Get user's astrological profile
+    zodiac = get_zodiac_sign(birth_date.month, birth_date.day)
+    chinese_zodiac = get_chinese_zodiac(birth_date.year)
+    element = get_element_from_year(birth_date.year)
+    life_path = get_life_path_number(birth_date_str)
+    
+    results = {}
+    categories = [category] if category else ["love", "money", "spiritual"]
+    
+    for cat in categories:
+        locations = LUCKY_LOCATIONS.get(cat, [])
+        scored_locations = []
+        
+        for loc in locations:
+            score = calculate_location_score(loc, element, zodiac, chinese_zodiac, life_path)
+            scored_locations.append({
+                **loc,
+                "score": score,
+                "category": cat
+            })
+        
+        # Sort by score descending
+        scored_locations.sort(key=lambda x: x["score"], reverse=True)
+        results[cat] = scored_locations
+    
+    return results
+
+def get_compatible_locations(birth_date1: str, birth_date2: str, mode: str = "romantic") -> dict:
+    """Find locations that work well for both people"""
+    locations1 = get_lucky_locations(birth_date1)
+    locations2 = get_lucky_locations(birth_date2)
+    
+    # Weight categories based on mode
+    if mode == "business":
+        weights = {"money": 0.6, "spiritual": 0.2, "love": 0.2}
+    else:  # romantic
+        weights = {"love": 0.5, "spiritual": 0.3, "money": 0.2}
+    
+    # Calculate combined scores for each location
+    combined_locations = {}
+    
+    for cat in ["love", "money", "spiritual"]:
+        weight = weights[cat]
+        for loc1 in locations1[cat]:
+            city = loc1["city"]
+            # Find matching location in person 2's list
+            loc2 = next((l for l in locations2[cat] if l["city"] == city), None)
+            if loc2:
+                combined_score = int((loc1["score"] + loc2["score"]) / 2 * weight * 100) / 100
+                
+                if city not in combined_locations:
+                    combined_locations[city] = {
+                        "city": city,
+                        "country": loc1["country"],
+                        "region": loc1["region"],
+                        "description": loc1["description"],
+                        "person1_score": loc1["score"],
+                        "person2_score": loc2["score"],
+                        "combined_score": combined_score,
+                        "best_for": cat
+                    }
+                else:
+                    # Update if this category gives higher combined score
+                    new_combined = int((loc1["score"] + loc2["score"]) / 2 * weight * 100) / 100
+                    if new_combined > combined_locations[city]["combined_score"]:
+                        combined_locations[city]["combined_score"] = new_combined
+                        combined_locations[city]["best_for"] = cat
+    
+    # Sort by combined score
+    result = sorted(combined_locations.values(), key=lambda x: x["combined_score"], reverse=True)
+    return result[:10]  # Top 10 compatible locations
+
+# ============ LOCATION API ENDPOINTS ============
+
+class LocationRequest(BaseModel):
+    category: Optional[str] = None  # love, money, spiritual, or None for all
+
+class CompatibilityRequest(BaseModel):
+    partner_birth_date: str
+    mode: str = "romantic"  # romantic or business
+
+@api_router.get("/locations/my-locations")
+async def get_my_lucky_locations(
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's lucky locations - basic preview for free, full for premium"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    
+    if not user.get("onboarding") or not user["onboarding"].get("birth_date"):
+        raise HTTPException(status_code=400, detail="Complete onboarding first")
+    
+    birth_date = user["onboarding"]["birth_date"]
+    locations = get_lucky_locations(birth_date, category)
+    
+    is_premium = user.get("is_premium", False)
+    
+    # Free users get top 2 per category, premium gets all
+    if not is_premium:
+        for cat in locations:
+            locations[cat] = locations[cat][:2]
+    
+    return {
+        "locations": locations,
+        "is_premium": is_premium,
+        "user_profile": {
+            "zodiac": get_zodiac_sign(
+                datetime.strptime(birth_date, "%Y-%m-%d").month,
+                datetime.strptime(birth_date, "%Y-%m-%d").day
+            ),
+            "chinese_zodiac": get_chinese_zodiac(datetime.strptime(birth_date, "%Y-%m-%d").year),
+            "element": get_element_from_year(datetime.strptime(birth_date, "%Y-%m-%d").year)
+        }
+    }
+
+@api_router.post("/locations/compatibility")
+async def get_location_compatibility(
+    request: CompatibilityRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get compatible locations for two people - PREMIUM ONLY"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    
+    if not user.get("is_premium", False):
+        raise HTTPException(status_code=403, detail="Premium subscription required for compatibility analysis")
+    
+    if not user.get("onboarding") or not user["onboarding"].get("birth_date"):
+        raise HTTPException(status_code=400, detail="Complete onboarding first")
+    
+    # Validate partner birth date
+    try:
+        datetime.strptime(request.partner_birth_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    user_birth = user["onboarding"]["birth_date"]
+    compatible_locations = get_compatible_locations(user_birth, request.partner_birth_date, request.mode)
+    
+    # Get profiles for both
+    user_date = datetime.strptime(user_birth, "%Y-%m-%d")
+    partner_date = datetime.strptime(request.partner_birth_date, "%Y-%m-%d")
+    
+    return {
+        "compatible_locations": compatible_locations,
+        "mode": request.mode,
+        "user_profile": {
+            "zodiac": get_zodiac_sign(user_date.month, user_date.day),
+            "chinese_zodiac": get_chinese_zodiac(user_date.year),
+            "element": get_element_from_year(user_date.year)
+        },
+        "partner_profile": {
+            "zodiac": get_zodiac_sign(partner_date.month, partner_date.day),
+            "chinese_zodiac": get_chinese_zodiac(partner_date.year),
+            "element": get_element_from_year(partner_date.year)
+        }
+    }
+
+
 # ============ BASIC ENDPOINTS ============
 
 @api_router.get("/")
