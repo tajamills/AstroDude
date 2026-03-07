@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 
-export const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://astro-luck-engine.preview.emergentagent.com';
+export const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://destiny-calc-demo.preview.emergentagent.com';
 
 export async function waitForAppReady(page: Page) {
   await page.waitForLoadState('domcontentloaded');

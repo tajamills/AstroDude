@@ -31,6 +31,25 @@ JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
 # Create the main app
 app = FastAPI(title="AstroLaunch Core Engine")
 
+# Configure logging FIRST
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# CORS must be configured BEFORE routes are added
+cors_origins = os.environ.get('CORS_ORIGINS', '*')
+logger.info(f"Configuring CORS with origins: {cors_origins}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins.split(',') if cors_origins != '*' else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
@@ -964,13 +983,17 @@ async def create_checkout_session(
     """Create Stripe checkout session for premium subscription"""
     stripe_api_key = os.environ.get("STRIPE_API_KEY")
     if not stripe_api_key:
-        raise HTTPException(status_code=500, detail="Payment system not configured")
+        logger.error("STRIPE_API_KEY not found in environment")
+        raise HTTPException(status_code=500, detail="Payment system not configured - missing API key")
     
     stripe.api_key = stripe_api_key
     
     # Build URLs from frontend origin
-    success_url = f"{checkout_req.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{checkout_req.origin_url}/dashboard"
+    origin_url = checkout_req.origin_url.rstrip('/')
+    success_url = f"{origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/dashboard"
+    
+    logger.info(f"Creating checkout for user {current_user['email']} with origin {origin_url}")
     
     try:
         # Create checkout session with subscription mode for recurring price
@@ -990,6 +1013,8 @@ async def create_checkout_session(
             },
             customer_email=current_user["email"]
         )
+        
+        logger.info(f"Checkout session created: {session.id}")
         
         # Create payment transaction record
         transaction = {
@@ -1012,7 +1037,7 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail=f"Payment error: {str(e)}")
     except Exception as e:
         logger.error(f"Checkout error: {e}")
-        raise HTTPException(status_code=400, detail=f"Failed to create checkout")
+        raise HTTPException(status_code=400, detail=f"Failed to create checkout: {str(e)}")
 
 @api_router.get("/payments/status/{session_id}")
 async def get_payment_status(
@@ -1152,21 +1177,6 @@ async def get_premium_status(current_user: dict = Depends(get_current_user)):
 
 # Include the router
 app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

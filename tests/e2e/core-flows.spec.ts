@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { dismissToasts } from '../fixtures/helpers';
 
-const PAGE_URL = 'https://astro-luck-engine.preview.emergentagent.com';
+const PAGE_URL = 'https://destiny-calc-demo.preview.emergentagent.com';
 
 test.describe('Landing Page', () => {
   test.beforeEach(async ({ page }) => {
