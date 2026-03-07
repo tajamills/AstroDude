@@ -67,8 +67,12 @@ const History = () => {
             Dashboard
           </Button>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-bold gradient-text hidden sm:inline">AstroLaunch</span>
+            <img 
+              src="https://static.prod-images.emergentagent.com/jobs/1dbb2fa2-fcd8-42a8-8162-f3f40f16aa0f/images/6ffb8cd872d8f9fcf005a6e679bb1eaaafac262a5a67b5fa1de793b1ab31c7c5.png" 
+              alt="8StarLuck" 
+              className="w-7 h-7 object-contain"
+            />
+            <span className="font-bold gradient-text hidden sm:inline">8StarLuck</span>
           </div>
         </div>
       </nav>

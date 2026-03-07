@@ -158,8 +158,12 @@ const Dashboard = () => {
       <nav className="relative z-10 px-4 py-4 border-b border-white/10">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            <span className="font-bold gradient-text hidden sm:inline">AstroLaunch</span>
+            <img 
+              src="https://static.prod-images.emergentagent.com/jobs/1dbb2fa2-fcd8-42a8-8162-f3f40f16aa0f/images/6ffb8cd872d8f9fcf005a6e679bb1eaaafac262a5a67b5fa1de793b1ab31c7c5.png" 
+              alt="8StarLuck" 
+              className="w-8 h-8 object-contain"
+            />
+            <span className="font-bold gradient-text hidden sm:inline">8StarLuck</span>
             {isPremium && <Crown className="w-4 h-4 text-yellow-400" />}
           </div>
           

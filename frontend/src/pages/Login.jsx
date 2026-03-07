@@ -76,8 +76,12 @@ const Login = () => {
             {/* Header */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Sparkles className="w-8 h-8 text-primary" />
-                <span className="text-2xl font-bold gradient-text">AstroLaunch</span>
+                <img 
+                  src="https://static.prod-images.emergentagent.com/jobs/1dbb2fa2-fcd8-42a8-8162-f3f40f16aa0f/images/6ffb8cd872d8f9fcf005a6e679bb1eaaafac262a5a67b5fa1de793b1ab31c7c5.png" 
+                  alt="8StarLuck" 
+                  className="w-10 h-10 object-contain"
+                />
+                <span className="text-2xl font-bold gradient-text">8StarLuck</span>
               </div>
               <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
               <p className="text-muted-foreground">Sign in to view your cosmic insights</p>

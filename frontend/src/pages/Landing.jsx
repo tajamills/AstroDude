@@ -52,8 +52,12 @@ const Landing = () => {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-2"
           >
-            <Sparkles className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold gradient-text">AstroLaunch</span>
+            <img 
+              src="https://static.prod-images.emergentagent.com/jobs/1dbb2fa2-fcd8-42a8-8162-f3f40f16aa0f/images/6ffb8cd872d8f9fcf005a6e679bb1eaaafac262a5a67b5fa1de793b1ab31c7c5.png" 
+              alt="8StarLuck" 
+              className="w-10 h-10 object-contain"
+            />
+            <span className="text-xl font-bold gradient-text">8StarLuck</span>
           </motion.div>
           
           <motion.div
@@ -199,10 +203,10 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-semibold">AstroLaunch</span>
+            <span className="font-semibold">8StarLuck</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            2026 AstroLaunch Core Engine. Cosmic guidance for modern decisions.
+            2026 8StarLuck Core Engine. Cosmic guidance for modern decisions.
           </p>
         </div>
       </footer>
