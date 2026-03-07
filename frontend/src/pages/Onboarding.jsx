@@ -428,7 +428,7 @@ const Onboarding = () => {
               >
                 Continue Free
               </Button>
-              <p className="text-xs text-muted-foreground">Premium coming soon</p>
+              {/* Premium is now available */}
             </div>
           </div>
         );
