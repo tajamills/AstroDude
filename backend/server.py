@@ -832,13 +832,25 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
 # ============ LUCK SCORE ENDPOINTS ============
 
 @api_router.get("/luck/today", response_model=LuckScoreResponse)
-async def get_today_luck(current_user: dict = Depends(get_current_user)):
+async def get_today_luck(
+    local_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
     user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
     
     if not user.get("onboarding") or not user["onboarding"].get("birth_date"):
         raise HTTPException(status_code=400, detail="Complete onboarding first")
     
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Use client's local date if provided, otherwise UTC
+    if local_date:
+        try:
+            datetime.strptime(local_date, "%Y-%m-%d")
+            today = local_date
+        except ValueError:
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    else:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
     birth_date = user["onboarding"]["birth_date"]
     
     # Check if we already calculated today's score

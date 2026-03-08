@@ -46,7 +46,11 @@ export const userAPI = {
 
 // Luck API
 export const luckAPI = {
-  getToday: () => api.get('/luck/today'),
+  getToday: () => {
+    // Send local date to avoid timezone issues
+    const localDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
+    return api.get(`/luck/today?local_date=${localDate}`);
+  },
   getForDate: (date) => api.get(`/luck/date/${date}`),
   getHistory: (limit = 30) => api.get(`/luck/history?limit=${limit}`),
   getWeekForecast: () => api.get('/luck/week'),
