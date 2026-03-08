@@ -115,22 +115,50 @@ const DecodePage = () => {
   };
 
   const handleShare = async () => {
+    if (!result) return;
+    
     const text = `DATE ENERGY - ${formatDate(selectedDate)}\n\nScore: ${result.total_score}\n${getLaunchLabel(result.total_score)}\n\nSignals:\n${getSignals(result).map(s => `${s.positive ? '✓' : '⚠'} ${s.text}`).join('\n')}\n\n8starluck.com`;
     
+    // Try native share first (mobile)
     if (navigator.share) {
       try {
-        await navigator.share({ text });
+        await navigator.share({ 
+          title: '8StarLuck - Date Energy',
+          text: text
+        });
+        return;
       } catch (e) {
-        copyToClipboard(text);
+        // User cancelled or share failed, fall through to clipboard
+        if (e.name !== 'AbortError') {
+          copyToClipboard(text);
+        }
       }
     } else {
+      // Desktop fallback - copy to clipboard
       copyToClipboard(text);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success('Copied to clipboard!');
+      } catch (e) {
+        toast.error('Failed to copy');
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const formatDate = (dateStr) => {
